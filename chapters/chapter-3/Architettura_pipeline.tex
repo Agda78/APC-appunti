@@ -210,6 +210,64 @@ Cerchiamo di capire come sia possibile realizzare una memoria dalle caratteristi
     \label{fig:mem_associativa}
 \end{figure}
 
+\subsection{Gestione dei conflitti sui dati}
+Se due istruzioni consecutive tentano di accedere contemporaneamente ad uno stesso registro/locazione di memoria, come già accennato in precedenza, si generano \textbf{conflitti sui dati}, classificabili in \textit{Read after Write} (R/W) e \textit{Write after Read} (W/R). Le operazioni R/R e W/W, invece, non causano problemi: la prima perché la lettura non modifica lo stato dei registri/memoria, la seconda perché conta solo la scrittura operata dalla seconda istruzione. Consideriamo un esempio di conflitto R/W.
+\begin{lstlisting}
+i:   R2 = R1 + R3  
+i+1: R4 = R2 + R5
+\end{lstlisting}
+La seconda istruzione (i+1) vuole leggere R2 prima che la prima (i) abbia terminato di scriverlo. Questo genererebbe uno stallo, perché la pipeline dovrebbe aspettare. Il problema viene risolto utilizzando la tecnica dell'anticipo degli operandi, anche nota come \textbf{Operand Fowarding}: il dato appena calcolato dall’ALU (fase EX della i) viene “girato” direttamente alla EX della i+1 senza aspettare che venga scritto in R2 (fase WB). Dunque, la soluzione consiste nel creare un canale hardware che renda i risultati disponibili appena l’ALU li calcola. Notiamo come questa sia realizzabile solo se si opera su registri del processore ed ogni fase impiega un solo ciclo di clock (tipico dei processori RISC).  
+\\
+\\
+Cerchiamo di complicare leggermente il conflitto.
+\begin{lstlisting}
+i:   R1 = MEMA          * carico da memoria in R1.
+i+1: R2 = R1 + R3       * uso R1 subito dopo.
+\end{lstlisting}
+L'accesso alla memoria è molto più lento di quello ai registri, dunque, anche con la tecnica di forwarding vista in precedenza non possiamo prendere un dato dalla memoria prima che sia pronto. Se i sta ancora caricando da memoria (fase MEM), la i+1 che vuole usare il contenuto di R1 non può partire se R1 non è ancora stato aggiornato. Soprattutto se il dato non è in cache, la fase di MEM può impiegare anche decine di cicli.
+\\
+La linea guida generale seguita dai processori con Pipeline è che la pipe non debba mai essere interrotta: lo scopo è mantenere un flusso continuo di istruzioni attraverso le varie fasi. Utilizzare la proprietà associativa e commutativa, quando possibile, permette di modificare l'ordine delle istruzioni non bloccando la pipe. La proprietà associativa consente di associare in un solo gruppo le istruzioni indipendenti tra loro; la commutativa, invece, permette di individuare i gruppi di istruzioni invertibili, ovvero la cui inversione non causa errori di esecuzione. Tutto ciò viene implementato in hardware prima della fase di Execute (EX). Se tali proprietà non dovessero essere soddisfatte, la pipe andrebbe in stallo.
+\\
+\\
+In tal caso, è possibile adottare un'altra tecnica nota come \textbf{Internal Fowarding}, che consiste nell'ibernare temporaneamente le istruzioni bloccate (ad esempio in attesa di dati dalla memoria), sospendendo la loro esecuzione. Nel frattempo, la pipeline può continuare con le istruzioni successive. Quando l'operazione bloccata è pronta per essere completata, viene ripresa nel corretto ordine. In questa soluzione quindi, le istruzioni vengono prelevate in sequenza ma non eseguite necessariamente in sequenza. Notiamo come questo comportamento viola il modello sequenziale di Von Neumann, in cui le istruzioni dovrebbero essere eseguite nell'ordine in cui sono scritte. Un problema importante che può emergere in questo contesto è la condivisione di registri tra istruzioni diverse. Cosa succede se più istruzioni accedono allo stesso registro? Se una lo modifica mentre un'altra lo sta ancora usando, si crea un conflitto sui dati, chiamato anche \textbf{Hazard}.  Una soluzione possibile è quella di creare più copie del registro coinvolto, in modo da tenere traccia dei diversi stati dello stesso dato nel tempo. Questo può essere implementato tramite una forma di indirizzamento indiretto: ogni registro ha uno o più puntatori che indicano sezioni di memoria dedicate a contenere le vecchie versioni del registro stesso. Per funzionare correttamente, è necessario che il numero di registri fisici (cioè le copie disponibili) sia maggiore rispetto ai registri logici visibili al programmatore, in modo da evitare conflitti durante l'esecuzione in parallelo delle istruzioni.
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.4\linewidth]{img/registri_copia.png}
+    \caption{Struttura dei registri copia con indirizzamento indiretto.}
+    \label{fig:enter-label}
+\end{figure}
+
+\subsection{Gestione delle interruzioni}
+Con l'introduzione del sistema a pipeline e del meccanismo dell'internal forwarding, che altera la sequenzialità delle istruzioni eseguite dal processore, il problema della \textbf{gestione delle interruzioni} diventa sempre più complesso. Infatti, può accadere che le istruzioni si completino in ordine diverso da quello di esecuzione. Se un'istruzione causa un'eccezione prima che le precedenti siano terminate, si parla di \textbf{interruzione non precisa}.
+Per evitarlo, si mira a una \textbf{gestione precisa}, dove il sistema blocca la pipeline, completa le istruzioni precedenti e impedisce l'avvio di quelle successive, mantenendo il comportamento sequenziale previsto dal modello di Von Neumann.
+\\
+\\
+Ricordiamo che le interruzioni sono dovute a diversi fenomeni, ma che in generale si classificano in interne ed esterne.
+Le \textbf{interruzioni esterne} sono le più facili da gestire. Supponiamo di avere una pipe nella quale, in un certo momento, sono state attivate un certo numero di istruzioni. In base al modello classico di Von Neumann, occorre terminare l'operazione in corso nella pipe (e le eventuali operazioni ibernate) e salvare lo stato del processore prima di servire una interruzione. Seguendo tale modello, quindi, quando giunge un'interruzione da parte di una periferica di I/O, la ISR sarà inserita nella pipe come una qualsiasi altra istruzione. Se il sistema delle interruzioni è vettorizzato, è la stessa periferica a identificarsi mediante un numero, che il 
+processore somma ad un indirizzo base, per calcolare l'indirizzo iniziale della ISR. Nel caso non vettorizzato, occorre interrogare i registri di stato di tutte le periferiche per scoprire quale ha causato l’interruzione (polling). Tale concetto si estende al caso Pipelined, salvo che le operazioni
+in corso sono più di una.
+\\
+\\
+Più critico è il caso delle \textbf{interruzioni interne}. Poiché si tratta di interruzioni che hanno effetto 
+all'interno della pipe e non all'esterno, tali eventi possono dare luogo ad un comportamento del programma diverso da quello di Von Neumann. Ad esempio, potrebbe accadere che in una sequenza (i,i+1), l'istruzione i+1 generi un'eccezione prima che l'istruzione i abbia il tempo di essere eseguita. Per garantire che il 
+comportamento del sistema, in queste condizioni, sia quello di Von Neumann, occorre complicare in maniera notevole l'hardware. Esempi di soluzioni che possono essere adottate sono:
+\begin{itemize}
+    \item \textbf{Rinuncia alle interruzioni precise}: Si accetta l'esecuzione non sequenziale, dando priorità all'interruzione che arriva per prima. Così facendo, si demanda al software la decisione sul capire se ci sono eventuali altre istruzioni in pipe che possono interrompere. È poco efficiente, ma accettabile dato che le eccezioni sono rare.
+    \item \textbf{Ricostruzione delle interruzioni precise}: Le istruzioni possono essere \textit{out-of-order}, ma si impiegano due possibili approcci:
+    \begin{enumerate}
+        \item Nell'approccio \textit{conservativo}, ogni istruzione prosegue solo se è sicuro che non causerà eccezioni. Questo riduce il parallelismo, ma garantisce precisione.
+        \item In quello \textit{ottimistico}, il processore prosegue comunque e, in caso di errore, effettua un \textbf{roll-back} (ripristino dello stato precedente). Questo richiede però di salvare lo stato del sistema.
+    \end{enumerate}
+\end{itemize}
+Concentriamoci sulla seconda soluzione e introduciamo le due principali tecniche che permettono di implementare il roll-back.
+\begin{enumerate}
+    \item La tecnica del \textbf{Check Point} consiste nel salvare periodicamente lo stato del processore (sia registri che Program Counter) in una memoria dedicata. In caso di eccezione, si ripristina l’ultimo stato salvato e si riprende l'esecuzione in modo sequenziale da lì. Il problema nasce nella gestione della memoria in presenza di istruzioni che ne alterano il contenuto e che non si sarebbero dovute eseguire perché successive all'istruzione che ha generato l'eccezione.
+    La principale difficoltà sta nello scegliere ogni quanto salvare i checkpoint: effettuandoli troppo spesso si rischia il sovraccarico, mentre effettuandoli troppo raramente il lavoro da fare in caso di errore aumenta.
+    \item La tecnica dell'\textbf{History Buffer}, invece, utilizza un area di memoria (buffer) in cui conserva ogni istruzione eseguita insieme ai valori originali dei registri (o operandi) che modifica. Le istruzioni rimangono nel buffer finché non è certo che tutte le precedenti sono andate a buon fine (cioè non hanno generato eccezioni). Se un’eccezione si verifica, il sistema può eseguire un'operazione di UNDO per annullare gli effetti di tutte le istruzioni successive a quella che ha causato l'errore. Anche in questo caso, per garantire un’interruzione precisa, è necessario procedere in modo sequenziale durante il recupero. Il buffer utilizzato deve essere grande quanto il numero di istruzioni che possono generare contemporaneamente interruzioni. Inoltre, la gestione History Buffer non costa nulla in assenza di interruzioni, questo perché le opreazioni di memorizzazione del "vecchio stato" avvengono in parallelo alle normali operazioni del processore. Dunque, il tutto è implementato in hardware.
+\end{enumerate}
+
+In un approccio basato sul roll-back è fondamentale essere conservativi sulla scrittura in memoria, ovvero bisogna fare attenzione a non scrivere (fase WB) troppo presto. Se lo si fa e poi si scopre che un'istruzione successiva ha generato un'eccezione, la scrittura sarebbe già avvenuta e non potremmo più tornare indietro in modo pulito.
+
 \section{Architetture Superscalari}
 L'utilizzo delle pipe porta dei vantaggi non in termini di attraversamento di una istruzione, che rimane invariato, ma in termini di produttività. Per ottenere prestazioni ancora migliori, è possibile realizzare un'architettura con più pipe che eseguono diverse istruzioni in parallelo, così da aumentare la produttività del sistema. Una tale architettura viene chiamata \textbf{Superscalare}. Tuttavia, questa introduce delle problematiche che vanno necessariamente risolte, queste sono:
 \begin{enumerate}
