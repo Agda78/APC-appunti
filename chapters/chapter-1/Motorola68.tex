@@ -31,9 +31,9 @@ La caratterizzazione del comando \lstinline|MOVE| è la seguente:
     MOVE.W (A0),D0
 
     *Indirizzamento Indiretto completo A1 = A0
-    MOVE.L (A0),(A1)
+    MOVE.L (A0),(A1) (istruzione non valida)
     *o
-    MOVEA.L (A0),(A1)
+    MOVEA.L (A0),A1 (istruzione valida)
     *Indirizzamento immediato + indirizzamento Diretto
     MOVE.L #14,D0
 
@@ -68,6 +68,10 @@ La caratterizzazione del comando \lstinline|MOVE| è la seguente:
     RTS   * Ritorna dall'ultima subroutine chiamata
 \end{lstlisting}
 
+Nota su MOVE.L D0, -(A7): il - nel "pushare" nello stack è dovuto al fatto che, per costruzione, lo stack "cresce" verso il basso, quindi quindi deve decrescere di 4 byte per ospitare quanto vi sto inserendo, ciò è così per costruzione ma è scollegato dal fatto che il 68k sia big endian).
+
+Nota su RTS: concettualmente, RTS equivale a MOVE.L (A7)+, PC perché il valore puntato da A7 è quello * in cima allo stack, in questo caso estraiamo quindi + (lo stack "sale"), in caso contrario avremmo avuto - (quando inseriamo nello stack)
+
 Nel codice precedente sono da notare le seguenti notazioni:
 \begin{itemize}
     \item \textbf{.W}: tale parte del comando permette di capire che sto lavorando con operandi lunghi 16 bit (o 2 Byte) esse sono denotate Word. Nel caso in cui non sia specificato alcun markup, allora la move è da intendersi per soli 8 bit
@@ -91,7 +95,7 @@ I codici aritmetici più importanti, ed in generale, più presenti all'interno d
     ADD.W #3,D0 *somma con specifica grandezza valore D0 = 3+D0
     ADD.W D0,D1 *indirizzamenti diretti con D1 = D0+D1
 
-    ADDA.L #1,A0 *somma su registri di tipo indirizzo
+    ADDA.L #1,A0 *somma su registri di tipo indirizzo, somma 1 direttamente al contenuto di A0, non alla locazione di memoria puntata da A0 (NON ci sonon le parentesi)
 
     ADDQ.W #1,D0 *somma di un valore immediato tra 1 e 8
 \end{lstlisting}
@@ -132,6 +136,7 @@ I codici aritmetici più importanti, ed in generale, più presenti all'interno d
 \end{lstlisting}
 
 Come si nota dalle varie implementazioni dei codici aritmetici, questi non possono utilizzare tipologie di indirizzamento indiretto. Pertanto, prima di effettuare le operazioni aritmetiche, gli operandi di input devono essere caricati nei registri interni ed il risultato sarà poi memorizzato in uno dei due registri impiegati (Come visibile nei commenti dei vari comandi).
+Inoltre, sia MULU e MULS che DIVU e DIVS lavorano implicitamente su 16 bit nel 68k, e non esistono cose del tipo MULU.B oppure MULU.L (idem per gli altri 3 codici operativi):
 
 \subsection{Codici di salto} \label{par:salto}
 
@@ -163,7 +168,15 @@ I salti non condizionati in motorola possono essere i seguenti:
 Solitamente nelle varie applicazioni si preferisce utilizzare il comando BRA, poichè più semplice da ricordare in riferimento ai comandi di salto condizionato
 
 \subsubsection{Salti condizionati}
-I salti condizionati hanno una forma più o meno eguale in base a quello che si vuole fare. La loro forma nel caso del 68k è del tipo: Bcc. Dove la B sta per BRANCH mentre "cc" sono le componenti che permettono di distinguere la condizione da considerare rispetto ai valori dello SR.
+I salti condizionati hanno una forma più o meno eguale in base a quello che si vuole fare. La loro forma nel caso del 68k è del tipo: Bcc. Dove la B sta per BRANCH mentre "cc" sono le componenti che permettono di distinguere la condizione da considerare rispetto ai valori dello SR. In particolare, i salti condizionati operano in base ai valori dei 5 bit del \textbf{CCR (Condition Code Register)}, che sono i 5 bit meno significativi dello SR, ed, in particolare, sono:
+\begin{lstlisting}
+    0 - C - Carry (riporto / overflow logico)
+    1 - V - Overflow aritmetico
+    2 - Z - Risultato uguale a 0
+    3 - N - Risultato negativo
+    4 - X - Extend (per operazioni multiple)
+\end{lstlisting}
+
 I principali comandi sono i seguenti:
 \begin{lstlisting}
     BCS label      * Salto se Carry e' settato (C = 1)
@@ -189,18 +202,18 @@ I principali comandi sono i seguenti:
 \subsubsection{Salti a subroutine}
 I salti a subroutine sono una tipologia di salto incondizionato. Tali salti fanno parte di architetture CISC principalmente, poichè alcune architetture RISC non prevedono tali funzioni. La presenza di tali funzioni permette di non dover gestire l'indirizzo di ritorno dalla subroutine, o almeno non direttamente dal programmatore. Le istruzioni che in motorola 68k sono principalmente utilizzate per la chiamata a subroutine sono le seguenti:
 \begin{lstlisting}
-    *Salta a una subroutine e salva il ritorno nello stack
+    *Salta a una subroutine e salva il ritorno nello stack (push nello stack)
     BSR label
 
     *Salta a una subroutine con indirizzo specifico o label
     JSR address/label
 
-    * Ritorna dalla subroutine (estrae l'indirizzo di ritorno dallo stack)
+    * Ritorna dalla subroutine (estrae l'indirizzo di ritorno dallo stack, fa il pop dallo stack)
     RTS
 \end{lstlisting}
 
 \subsection{Codici Logici}
-I codici logici sono operazioni che possono essere effettuate su degli operandi operando bit a bit. Esempi di codici logici sono i seguenti:
+I codici logici sono operazioni che possono essere effettuate su degli operandi operando bit a bit. Da notare che per i codici logici si può avere l'indirizzamento indiretto solo per la sorgente e non per il destinatario. Esempi di codici logici sono i seguenti:
 \begin{lstlisting}
     AND #3, D0      * AND bit a bit con valore immediato, D0 = D0 & 3
     AND.W D0, D1    * AND tra registri, D1 = D1 & D0
@@ -222,7 +235,7 @@ I codici logici sono operazioni che possono essere effettuate su degli operandi 
 \subsection{Codici di Scorrimento}
 I codici di scorrimento permettono di effettuare delle operazioni di shift, che possono essere comode in alcune tipologie di operazioni
 \begin{lstlisting}
-    ASL #1, D0      * Shift aritmetico a sinistra di 1 bit (mantiene il segno)
+    ASL #1, D0      * Shift aritmetico a sinistra di 1 bit (mantiene il segno), da notare che lo shift aritmetico ha l'effetto di moltiplicare per 2 (se convertiamo da decimale a binario il valore del registro prima e dopo lo shift), tranne se perdi bit significativi o alteri il segno, e dopo lo shift aritmetico possono essere modificati i bit del CCR)
     ASR #1, D0      * Shift aritmetico a destra di 1 bit
 
     LSL #1, D0      * Shift logico a sinistra di 1 bit (riempie con 0)
@@ -236,7 +249,7 @@ I codici di scorrimento permettono di effettuare delle operazioni di shift, che 
 \end{lstlisting}
 
 \subsection{Codici di Confronto} \label{par:confronto}
-I codici di confronto sono molto importanti, poichè in accoppiata con i salti condizionati permettono di costruire tutti i costrutti fondamentali che possiamo trovare anche nei linguaggi di alto livello
+I codici di confronto sono molto importanti, poiché in accoppiata con i salti condizionati permettono di costruire tutti i costrutti fondamentali che possiamo trovare anche nei linguaggi di alto livello
 \begin{lstlisting}
     CMP #5, D0      * Confronta D0 con 5 (D0 - 5, senza modificare D0, aggiorna i flag)
     CMP.W D0, D1    * Confronta D1 con D0 (D1 - D0, aggiorna solo i flag)
