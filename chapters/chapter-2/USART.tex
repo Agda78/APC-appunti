@@ -1,0 +1,29 @@
+\newpage
+\section{USART (Universal Synchronous-Asyncronous Receiver-Transmitter)}
+
+L'USART (Universal Synchronous-Asyncronous Receiver-Transmitter) è un interfaccia di comunicazione seriale. In generale i sistemi di comunicazione seriale utilizzano solo 1 filo per comunicare (Tx -> Rx), che permette il collegamento tra il trasmittente ed il ricevente, a questo singolo collegamento, solitamente, si aggiungono altri fili, che aggiungono: controlli di flusso, segnali di tempificazione ecc.
+Non si scende troppo nei dettagli di tali architetture, poichè poi si vanno a specializzare nei vari dispositivi che vengono prodotti, un esempio sarà l'Intel 8251.
+
+\subsection{Comunicazioni Sincrona ed Asincrona}
+Come detto nel precedente paragrafo, l'USART (a differenza del suo predecessore, l'UART), prevede 2 modalità di funzionamento:
+\begin{itemize}
+    \item \textbf{Sincrona}
+    \item \textbf{Asincrona}
+\end{itemize}
+Tali modalità sono profondamente diverse, sia per quanto riguarda l'architettura sia per quanto riguarda il loro modo di comunicazione dei dati.
+
+\subsubsection{Comunicazione Sincrona}
+Nel caso della comunicazione di tipo Sincrona, i due dispositivi (per una comunicazione unidirezionale) condividono 2 collegamenti:
+\begin{itemize}
+    \item Tx -> Rx
+    \item clk\_t -> clk\_r
+\end{itemize}
+
+Questo perchè una comunicazione sincrona sfrutta un segnale di tempificazione comune. La velocità di trasmissione dei dati è quindi dettata dalla frequenza del clock comune. A differenza della comunicazione \textbf{Asincrona}, la comunicazione sincrona è molto più veloce e robusta (data la sincronizzazione in hardware tramite il clock condiviso), ma è molto difficile da implementare a livello hardware, poichè bisogna sincronizzare in maniera molto precisa dati e trasmissione di essi.
+
+\subsubsection{Comunicazione Asincrona}
+Nel caso della comunicazione di tipo Asincrona, i due dispositivi richiedono un singolo collegamento (sempre ragionando sul singolo canale trasmissivo Tx -> Rx).
+L'invio dei dati è gestito da due bit di start e stop che vanno a scandire, precisamente, l'inizio dell'invio del messaggio e la fine del messaggio.
+La tipologia di comunicazione, rispetto alla \textbf{Sincrona} risulta meno efficiente rispetto al trasporto di informazioni, anche se conserva il vantaggio per il rispetto dell'asincronicità intrinseca dei dati, e quindi ottimizza meglio i tempi di invio dei dati (non deve aspettare un fronte del clock condiviso come nel caso della comunicazione sincrona)
+
+\subsubsection{Errori principali presenti nella comiunicazione seriale}
