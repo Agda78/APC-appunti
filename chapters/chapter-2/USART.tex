@@ -27,3 +27,11 @@ L'invio dei dati è gestito da due bit di start e stop che vanno a scandire, pre
 La tipologia di comunicazione, rispetto alla \textbf{Sincrona} risulta meno efficiente rispetto al trasporto di informazioni, anche se conserva il vantaggio per il rispetto dell'asincronicità intrinseca dei dati, e quindi ottimizza meglio i tempi di invio dei dati (non deve aspettare un fronte del clock condiviso come nel caso della comunicazione sincrona)
 
 \subsubsection{Errori principali presenti nella comiunicazione seriale}
+Quando si fanno interagire due sistemi mediante una comunicazione di tipo seriale asincrona (UART), in fase di ricezione, si può andare in contro ai seguenti tipi di errori:
+\begin{itemize}
+    \item \textbf{Errore di parità}: Il valore del bit di parità inviato non corrisponde con quello calcolato al ricevitore
+    \item \textbf{Errore di framing}: Non è previsto il bit di stop
+    \item \textbf{Errore di Overruning}: Errore dovuto alla differenza dei clock di invio. Se il sistema ricevente è più lento del sistema trasmittente, allora si può avere perdita di informazioni (non si coglie bene il bit di start)
+\end{itemize}
+
+Tra questi errori l'unico su cui si può attuare un miglioramento è quello di overrun, questo perchè si può prevedere che il dato venga trasmesso secondo uno specifico protocollo di handshacking. Difatti nelle architetture sono presenti appositi collegamenti per l'implementazione di tale soluzione, anche se quest'ultima rallenta un po la ricezione rendendola meno efficente.
