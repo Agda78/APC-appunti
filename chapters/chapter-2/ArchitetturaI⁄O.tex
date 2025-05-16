@@ -114,6 +114,272 @@ Il codice [\ref{m68:polling}] presenta però le seguenti criticità:
 Le due problematiche (o criticità), possono essere affrontate in vario modo. Per la prima la soluzione è molto semplice, al posto di andare a considerare i registri di Dato, Stato e Controllo in maniera diretta, possono essere considerati come registri indirizzo (Ai), a cui vado ad associare gli indirizzi di tali registri. Tali inidirizzi poi vengono settati secondo un determinato criterio prima della chiamata al driver.
 Per ovviare, invece, al secondo problema c'è il bisogno di considerare le \textbf{interruzioni}. Mentre per l'ultimo problema la soluzione è l'introduzione di \textbf{timer}, che permettono di capire quando un sistema sta impiegando un tempo più grande del dovuto per eseguire un operazione, ciò permette di poter gestire ed uscire da situazioni di eventuali guasti.
 
+\subsection{PIA} \label{par:PIA}
+
+La \textbf{PIA (Periferal Interface adapter)} è un dispositivo di comunicazione parallela ad 8 bit. Tale architettura è un dispositivo hardware che si posiziona tra la periferica e il processore stesso. Essa è costituita architetturalmente da due tipologie diverse di porto, il porto A ed il porto B.[\ref{img:PIA}]
+Tali porti hanno dei registri che sono direzionali, quindi possono assumere una sola funzione (tra entrata ed uscita), in base alla loro specifica impostazione e configurazione.
+Prima di parlare di più porti ci concentriamo sulle comunicazioni a singolo porto; in generale le comunicazioni che avvengono tra due interfacce della PIA sono configurabili tramite i bit di configurazione del chipset. Nel nostro caso, la comunicazione che maggiormente utilizzeremo è quella dotata di handshacking, per cui si avrà una configuraizone ed un collegamento simile all'immagine [\ref{img:PIA-CON}].
+Il dispositivo PIA simulato in ASIM è derivato da quello commerciale MC6821. Questo è dotato di sei registri a 8 bit, tra cui: due registri per il trasferimento dei dati da e verso la periferica (\textit{PRA} e \textit{PRB}); due registri di controllo/stato (\textit{CRA} e \textit{CRB}); infine due registri per il controllo della direzione dei dati (\textit{DRA} e \textit{DRB}). Questi registri sono accessibili mediante indirizzamento interno secondo la tabella \ref{Tab:reg_ind_1}:
+
+\begin{table} [!h]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        \multicolumn{5}{|c|}{\textbf{Indirizzamento interno}} \\ \hline
+        \textbf{RS1} & \textbf{RS0} & \textbf{CRA2} & \textbf{CRB2} & \textbf{Registro selezionato}\\ \hline
+        0       &0      &1      &X      &PRA    \\  \hline
+        0       &0      &0      &X      &DRA    \\  \hline
+        0       &1      &X      &X      &CRA    \\  \hline
+        1       &0      &X      &1      &PRB    \\  \hline
+        1       &0      &X      &0      &DRB    \\  \hline
+        1       &1      &X      &X      &CRB    \\  \hline
+    \end{tabular}
+    \caption{Indirizzamento interno}
+    \label{Tab:reg_ind_1}
+\end{table}
+
+Questi registri sono selezionabili dal processore mediante le linee RS1 ed RS0.
+Nel dettaglio, i registri di contollo sono a 8 bit suddivisi come indicato in tabella \ref{Tab:control_registers}:
+
+\begin{table}[!ht]
+    \centering
+    \renewcommand{\arraystretch}{1.5} % Aumenta l'altezza delle righe
+    \setlength{\tabcolsep}{8pt} % Uniforma la distanza tra colonne
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+        \hline
+        \multirow{2}{*}{\textbf{CRA}} 
+        & \textbf{7}  & \textbf{6}  & \textbf{5}  & \textbf{4}  & \textbf{3}  & \textbf{2}  & \textbf{1}  & \textbf{0}  \\ 
+        \cline{2-9} 
+        & \textit{IRQA1}  & \textit{IRQA2}  
+        & \multicolumn{3}{c|}{\textit{controllo CA2}}  
+        & \textit{Accesso DRA}  
+        & \multicolumn{2}{c|}{\textit{controllo CA1}}  \\ 
+        \hline
+        \multirow{2}{*}{\textbf{CRB}}  
+        & \textbf{7}  & \textbf{6}  & \textbf{5}  & \textbf{4}  & \textbf{3}  & \textbf{2}  & \textbf{1}  & \textbf{0}  \\ 
+        \cline{2-9} 
+        & \textit{IRQB1}  & \textit{IRQB2}  
+        & \multicolumn{3}{c|}{\textit{controllo CB2}}  
+        & \textit{Accesso DRB}  
+        & \multicolumn{2}{c|}{\textit{controllo CB1}}  \\ 
+        \hline
+    \end{tabular}
+    \caption{Control Registers}
+    \label{Tab:control_registers}
+\end{table}
+
+
+
+Entrando nei dettagli del processo, bisognerà fare particolare attenzione ai seguenti registri:
+\begin{itemize}
+    \item \textbf{CA1,CB1}: Sono registri che possono assumere solo direzione di ingresso e solitamente vengono usati come "lettori" di segnali SYN o segnali ACK da parte dell'altro dispositivo;
+    \item \textbf{CA2,CB2}: Sono i registri che possono essere configurati(sia di ingresso che di uscita), ed in generale, in base al protocollo che si vuole interpretare, vengono settati in una determinata modalità di funzionamento (dipendente dalla tipologia di protocollo che si vuole implementare);
+    \item \textbf{Dato}: Il bus dati trasmette parallelamente i dati tra le due periferiche in base al protocollo di handshacking utilizzato. I bus dati sono unidirezionali ma la direzione è programmabile. 
+\end{itemize}
+
+\begin{figure}
+    \centering
+    % \includegraphics[width=0.45\textwidth]{img/PIA.png}
+    % \hfill
+    \includegraphics[width=0.75\textwidth]{img/PIA-SCHEME.jpg}
+    \caption{Architettura base della PIA}\label{img:PIA}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.65\textwidth]{img/PIA-CON.png}
+    \caption{Collegamento tra due dispositivi tramite PIA}\label{img:PIA-CON}
+\end{figure}
+
+Per far si che le due architetture possano comunicare è quindi importante definire come si andranno a collegare e quindi la direzione e l'interpretazione che bisogna dare ai registri. Una possibile architettura di collegamento è quella visibile all'immagine [\ref{img:PIA-CON}].
+Le linee D0-D7 sono di interfacciamento con il processore e sono bidirezionali in base alla natura dell'operazione richiesta (lettura o scrittura). 
+Poiché la PIA ha due porti distinti, può essere collegata al processore con due linee di interruzioni differenti denominate \textbf{IRQA} (porto A) e \textbf{IRQB} (porto B).  
+
+Una volta definita la tipologia di architettura si va a decidere come queste periferiche dovranno interagire tra loro (definizione del protocollo), per cui si va ad impostare uno specifico registro di configurazione che permetterà di impostare le seguenti opzioni:
+
+\begin{itemize}
+    \item \textbf{Interrupt o polling}: A che livello di priorità si andrà ad impostare l'interruzione della PIA;
+    \item \textbf{Modalità di funzionamento}: se attuo l'handshacking o altre tipologie di protocolli;
+    \item \textbf{Lettura o scrittura}: 
+
+ 
+\end{itemize}
+Una volta definita la struttura del registro di configurazione questo viene settato per impostare la PIA. 
+Una volta impostato il modo di funzionamento si va a gestire il tutto. Qundi, se si è scelto un funzionamento tramite interrupt si avrà un certo tipo di comportamento, altrimenti se ne avrà un altro.
+
+Il funzionamento generale della fase di \textbf{handshaking} tra due dispositivi PIA è gestita, per i nostri esempi, in un particolare modo.
+Per fare chiarezza andremo a dividere la fase di ricezione dalla fase di trasmissione.
+In fase di \textbf{trasmissione} le operazioni che si vanno ad effettuare sonno le seguenti:
+\begin{itemize}
+    \item \textbf{Inserimento del dato}: La periferica posiziona il dato sul bus dati collegato in maniera diretta con la PIA. Una volta effettuato l'inserimento, la periferica tramite la linea CA1 invia un segnale di \textit{dato pronto} alla PIA, quindi sulla transizione di CA1, in accordo alla configurazione, si propaga un'interruzione al processore. Internamente, la periferica alzerà CA2 (in accordo al protocollo handshaking 100).
+    \item \textbf{Attesa dell'ack}: Il sistema aspetta che l'ack si abbassi per capire che il dato è stato inviato correttamente. Una volta ottenuto l'ACK, la PIA abbassa (dopo una lettura fittizia) CA2, che viene interpretato dalla periferica come \textit{registro dati libero}.
+    \item \textbf{Lettura fittizia}: Dato che voglio inviare un nuovo dato, ho bisogno di abbassare il bit CRA7, ma non posso farlo in maniera diretta (configurando un apposito registro di controllo), poichè il bit CRA7 è buona norma che sia in sola lettura. Di conseguenza per abbassare tale valore vado ad effettuare una lettura a vuoto (o lettura fittizzia), che mi permette di abbassare il bit CRA7 e la linea CA2 in modo da poter proseguire nelle operazioni.
+\end{itemize}
+
+Nella fase di ricezione, invece, si ha:
+\begin{itemize}
+    \item \textbf{Attesa del dato}: Si attende che venga inviato un dato sul porto della PIA, tale attesa può essere effettuata o tramite Polling, andando a controllare in continuazione il valore del bit CRB7, o attivando un'interrupt diretta all'arrivo dell'evento sul bit CB1.
+    
+    \item \textbf{Ricezione del dato}: Una volta compreso che vi è un dato pronto, si effettua una lettura del dato, ed in automatico, la PIA abbasserà il bit CRB7 ed invierà un segnale di ACK, abbassando il valore in CB2
+
+    \item \textbf{Fine}: Nel caso di polling, il sistema continuerà ad aspettare nuovi dati andando a controllare il bit CRB7. Mentre nel caso elle interrupt continuerà il suo normale flusso di esecuzione
+\end{itemize}
+
+Andando ad analizzare il codice delle varie operazioni è importante capire la metodologia di funzionamento del sistema, sia per costruire l'architettura in maniera adeguata che per scrivere i driver in maniera corretta.
+
+\subsubsection{Configurazione della PIA}
+La PIA prima di essere utilizzata, richiede una propria configurazione, in parte dipendente dall'architettura e da una parte inerente al driver che si deve implementare.
+Per la parte hardware dobbiamo scrivere (almeno per le nostre simulazioni in ASIM), il \textbf{file di configurazione} che definisce tutti gli specifici collegamenti tra i dispositivi con gli specifici significati. Mentre nel caso di configurazione del driver, una volta definita l'architettura su cui si andrà ad eseguire il codice, si vanno ad impostare i registri di controllo e dato, in modo da poter utilizzare il nostro dispositivo (sia con il polling che con interrupt).
+
+\paragraph{Definizione dei registri di controllo e dato\\}\label{par:cnt-stt} 
+Il registro di controllo ed il registro di stato vengono inizializzati all'interno della configurazione. Quindi prima di iniziare a scrivere il driver bisogna osservare per bene il file di configurazione. Più precisamente dobbiamo osservare i seguenti due parametri della nostra PIA:
+\begin{itemize}
+    \item \textbf{Address 1}: Indirizzo su cui è mappata la PIA;
+    \item \textbf{Address 2}: Indirizzo del registro di controllo della PIA (dove saranno inserite le configurazioni).
+\end{itemize}
+
+Una volta osservati tali parametri si inizializzano i registri di dato e controllo nel seguente modo:
+\begin{lstlisting}
+PIADB       EQU     $2006	*indirizzo del registro dato 
+PIACB       EQU     $2007	*indirizzo del registro di controllo
+\end{lstlisting}
+
+Tali registri saranno utilizzati all'interno delle ISR per poter controllare/comunicare con la PIA, sia per configurarla (in una fase iniziale). Più precisamente andiamo ad effettuare le seguenti due operazioni:
+\begin{itemize}
+    \item \textbf{Configurazione}: dove si imposta il registro di controllo in base a quello che si vuole effettuare, quindi viene impostato nelle fasi iniziali del driver;
+    \item \textbf{Gestione}: Vengono definite le modalità di funzionamento in base alla tipologia di filosofia adottata.
+\end{itemize}
+
+Un main che è uguale ad entrambe le tipologie di comportamento (interruzioni e polling) è il seguente:
+\begin{lstlisting}
+*MAIN
+MAIN	JSR    DVBOUT	*Configurazione della PIA
+\end{lstlisting}
+
+Per la fase di configurazione, la procedura rimane la stessa a meno della maschera, pertanto viene riportato qui il caso con maschera e saranno riaffrontate le due differenti gestioni all'interno degli appositi sottocapitoli [\ref{par:PIA-INT}] e [\ref{par:PIA-POL}].
+\begin{lstlisting}
+DVBOUT      MOVE.B      #0,PIACB		*seleziona il registro direzione di PIA porto B 
+MOVE.B      #$FF,PIADB	  		*accede a DRB e pone DRA=1 : le linee di B sono linee di output	
+MOVE.B      #%00100101,PIACB   	*imposta il registro di controllo in base alla sua mappatura
+*								;i bit CRB7 e CRB6 sono a sola lettura	
+RTS
+\end{lstlisting}
+
+% Per capire meglio come impostare il registro di controllo, di seguito è riportata la sua mappatura bit a bit:
+% \begin{itemize}
+%     \item \textbf{Bit 7}:
+%     \item \textbf{Bit 6}:
+%     \item \textbf{Bit 5}:
+%     \item \textbf{Bit 4}:
+%     \item \textbf{Bit 3}:
+%     \item \textbf{Bit 2}:
+%     \item \textbf{Bit 1}:
+%     \item \textbf{Bit 0}: \textcolor{red}{FATTI SPIEGARE IL SIGNIFICATO ED IL NOME DEI VARI BIT}
+% \end{itemize}
+
+Per capire meglio come impostare il registro di controllo, riportiamo di seguito un'analisi più approfondita dei bit dei registri di controllo esposti nella tabella \ref{Tab:control_registers}:
+I bit 0,1 -> di CRA (o CRB) servono a controllare il flag di interruzione IRQA1 (IRQB1) in posizione 7 nella parola di stato-controllo. Lo stato del flag IRQA1 si propaga sulla linea di interruzione IRQA verso il processore generando un'interruzione. In particolare, il bit 0 stabilisce se le interruzioni vengono propagate al processore (valore 1) o se vengono \textit{mascherate} (valore 0), mentre il bit 1 serve a stabilire se l'interruzione viene propagata sul fronte di salita del segnale low->high (valore 1) o sul fronte di discesa high->low (valore 0) di CA1.
+Per i bit 3,4,5 di CRA (o CRB) occorre fare una distinzione: se la linea è stata programmata come linea di ingresso (settando il bit 5 a 0), si comporta come i bit 0,1 con b3 nella funzione di b0 e b4 nella funzione di b1; se la linea è stata programmata come linea di uscita (settando il bit 5 a 1), CA2 (CB2) permette di controllare la periferica tramite la linea CA2. Sono previsti 3 possibili modi di sincronizzazione codificati con i bit b4 e b3, ovvero \textcolor{red}{100 -> Modo Handshake}, \textcolor{green}{101 -> Modo impulsivo} (l'abilitazione di CA2 segue il profilo dell'impulso di un clock) e \textcolor{blue}{11x -> Modo dipendente dal bit 3} (ovvero CA2 alto o basso in base a come viene manualmente settato il bit 3).  
+
+
+
+\subsubsection{Gestione PIA senza Interrupt}\label{par:PIA-INT}
+La gestione senza interrupt sfrutta la tecnica del polling per monitorare volta per volta la struttura dei registri di stato, che quindi mi permette di capire quando agire sul dato o meno. Per effettuare il polling ho bisogno di configurare il registro di controllo in modo da non far attivare le interrupt.
+Seguendo lo schema presente alla fine del paragrafo [\ref{par:cnt-stt}], dovrò impostare come controllo la seguente sequenza: 00100100, dove indichiamo che non vi è bisogno dell'uso delle interrupt. Questa sequenza significa che le interrupt non vengono propagate al processore (b0=0), con le linee AD1 e AD0 si accede al registro dati (b2=1), il protocollo scelto è l'handshaking (b5b4b3 = 100).
+
+Prendendo in considerazione la prima parte del main, quindi, vado a definire come sub-routine di configurazione la seguente schematica:
+\begin{lstlisting}
+DVBOUT	MOVE.B	#0,PIACB		*seleziona il registro direzione di PIA porto B 
+MOVE.B	#$FF,PIADB	  		*accede a DRB e pone DRA=1 : le linee di B sono linee di output	
+MOVE.B	#%00100100,PIACB   	*imposta il registro di controllo come indicato precedentemente
+								*i bit CRB7 e CRB6 sono a sola lettura	
+RTS
+\end{lstlisting}
+
+Una volta impostata la periferica, il polling viene effettuato sul registro di controllo. Di seguito vi è l'esempio di un invio di un dato, dove il controllo sull'ack viene effettuato all'interno di un ciclo, senza considerare l'utilizzo delle interrupt.
+
+\begin{lstlisting}
+ORG     $8200
+MAIN    JSR    DVBOUT	*inizializza PIA 
+
+        MOVEA.L	#PIACB,A1	*indirizzo registro di controllo CRB
+        MOVEA.L	#PIADB,A2	*indirizzo registro PRB
+        MOVEA.L	#MSG,A0	*indirizzo area messaggio
+        MOVE.B	DIM,D0	*dim del messaggio
+
+        CLR	D1	*appoggio
+        CLR	D2	*contatore elementi trasmessi
+
+
+INVIO	MOVE.B	(A2),D1            *lettura fittizia da PRB => serve per azzerare CRB7 dopo il primo carattere, altrimenti resta settato con l'ack
+        MOVE.B	(A0)+,(A2)	*carattere corrente da trasferire su bus di PIA porto B: dopo la scrittura di PRB, CB2 si abbassa
+*								*cio' fa abbassare CA1 sulla porta gemella dell'altro sistema generando 
+*								*un'interruzione che coincide con il segnale DATA READY
+        ADD.B		#1,D2		    *incremento contatore elementi trasmessi
+
+ciclo2	MOVE.B	(A1),D1		*In attesa di DATA ACKNOWLEDGE
+        ANDI.B	#$80,D1				*aspetta che CRB7 divenga 1
+        BEQ	ciclo2
+
+        CMP	D2,D0	*controllo se ho finito di trasmettere
+        BNE	INVIO
+
+LOOP  	JMP LOOP	*ciclo caldo dove il processore ha completato la trasmissione	
+\end{lstlisting}
+
+
+\subsubsection{Gestione PIA con Interrupt}\label{par:PIA-POL}
+La gestione della pia con il funzionamento dell'interrupt va a sfruttare il meccanismo delle interrupt autovettorizzate, per cui oltre a definire il registro di controllo in un certo modo, dobbiamo caricare all'interno dell'area degli indirizzi autovettorizzati, l'indirizzo della nostra ISR (che si traduce in ASIM nel caricare il file di configurazione della memoria fornito dal professore). Il caricamento dei dati non fa altro che inserire l'indirizzo di memoria della nostra ISR all'interno dell'apposita cella identificata.
+Come prima cosa definiamo il registro di configurazione come: 00100101
+
+Il codice che va a configurare il registro di controllo è il seguente:
+\begin{lstlisting}
+DVAIN	MOVE.B	#0,PIACA		*mette 0 nel registro controllo cosi' al prossimo accesso a PIADA (indirizzo pari)
+*								*selezionera' il registro direzione del porto A
+        MOVE.B	#$00,PIADA		    ;accede a DRA e pone DRA=0 : le linee di A sono linee di input	
+        MOVE.B	#%00100101,PIACA  	;imposta il registro di controllo come indicato sopra, ponendo IRQA1=1 e IRQA2=1
+*								;i bit CRA7 e CRA6 sono a sola lettura	
+RTS
+\end{lstlisting}
+
+Oltre alla configurazione, andiamo ad attivare il meccanismo delle interrupt all'interno del processore, ed andiamo ad impostare la modalità utente, in modo da poter visualizzare anche che le ISR vengono eseguite sempre in modalità supervisore. Per capire meglio tale passaggio, di seguito vi è il MAIN:
+\begin{lstlisting}
+MAIN	JSR	DVAIN	*inizializza PIA porto A
+            
+        MOVE.W	SR,D0	*legge il registro di stato
+        ANDI.W	#$D8FF,D0 *maschera per reg stato (stato utente, int abilitati)
+        MOVE.W	D0,SR	*pone liv int a 000
+
+LOOP  	JMP LOOP	*ciclo caldo dove il processore attende interrupt	
+\end{lstlisting}
+
+Una volta scitto il main ed aver fatto tutte le dovute configurazioni, possiamo osservare la scrittura del driver, che avrà il suo indirizzo di inizio caricato nel sistema delle interrupt autovettorizzate, che in questo caso sarà 8700:
+\begin{lstlisting}
+            ORG $8700		
+
+INT3        MOVE.L  A1,-(A7)		;salvataggio registri che saranno utilizzati
+            MOVE.L  A0,-(A7)
+            MOVE.L  D0,-(A7)
+
+            MOVEA.L	#PIADA,A1
+            MOVEA.L	#MSG,A0	*indirizzo area di salvataggio              
+            MOVE.B	COUNT,D0	*contatore corrente degli elementi ricevuti
+
+    
+            MOVE.B 	(A1),(A0,D0)	*acquisisce il carattere e lo trasferisce in memoria
+*						*la lettura da PRA fa abbassare CRA7 e CA2 => nell'altro sistema si abbassa CB1
+*						*cio' corrisponde all'attivazione di CRB7 che funge da DATA ACKNOWLEDGE
+    
+            ADD.B	#1,D0
+            MOVE.B	D0,COUNT
+
+            MOVE.L  (A7)+,D0		*ripristino registri 
+            MOVE.L  (A7)+,A0
+            MOVE.L  (A7)+,A1
+            
+            RTE
+\end{lstlisting}
+
 \subsection{Interruzioni}
 L'interruzione è un evento che cambia la normale esecuzione di un programma per fargli eseguire prima del codice specifico per la gestione di quella determinata condizione [\ref{img:bootint}]. In generale non è corretto parlare solo di interruzioni, poichè tale termine non comprende o non può comprendere anche il caso in cui le interruzioni vengano scatenate dall'interno per casistiche particolari. Difatti è più corretto fare la seguente suddivisione:
 \begin{itemize}

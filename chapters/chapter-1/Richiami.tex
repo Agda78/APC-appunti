@@ -18,8 +18,8 @@ I registri possono essere divisi principalmente in registri utilizzabili dal pro
 
 Tra i registri a cui invece il programmatore non ha accesso vi sono:
 \begin{itemize}
-    \item \textbf{MA(Memory Access)}: Registro utilizzato dal processore per scrivere l'indirizzo di memoria a cui si vuole accedere
-    \item \textbf{MB(Memory Buffer)}: Registro che contiene il dato che si è letto/scritto in memoria (varia in base ai valori dei segnali di write e di read gestiti dalla CU)
+    \item \textbf{MA (Memory Access)}: Registro utilizzato dal processore per scrivere l'indirizzo di memoria a cui si vuole accedere
+    \item \textbf{MB (Memory Buffer)}: Registro che contiene il dato che si è letto/scritto in memoria (varia in base ai valori dei segnali di write e di read gestiti dalla CU)
 \end{itemize}
 
 \subsubsection{Memoria}
@@ -35,7 +35,7 @@ Posso memorizzare i dati i memoria in vario modo, quindi posizionandoli in vario
 Oltre all'organizzazione dei dati un altro problema della gestione della memoria è il suo allineamento in memoria, dato dal fatto della gestione delle sue celle di byte in maniera "indipendente".
 Nel caso del motorola 68k, sono consentiti gli accessi in memoria anche a porzioni diverse di byte, ma tali porzioni hanno il vincolo di poter essere obbligatoriamente o da 2 o da 4 Byte che iniziano in posizioni di memoria pari. Quindi si possono avere degli errori se si accede a posizioni di memoria dispari
 \\
-A volte quando si lavora con gli indirizzi di memoria si può andare anche in contro al problema dell'\textbf{Aliasing}, ovvero un problema che riguarda l'accesso a locazioni di memoria sbagliate rispetto a quelle effettivamente desiderate (nel caso del 68k questo problema è dovuto al fatto che possiede 24 fili di bus ma i registri sono a 32 bit, per cui se prelevo un indirizzo dalla memoria, perdendo gli 8 bit più significativi, se faccio accesso all'indirizzo caricato, posso confonderlo con uno più piccolo)
+A volte quando si lavora con gli indirizzi di memoria si può andare anche in contro al problema dell'\textbf{aliasing}, ovvero un problema che riguarda l'accesso a locazioni di memoria sbagliate rispetto a quelle effettivamente desiderate (nel caso del 68k questo problema è dovuto al fatto che possiede 24 fili di bus ma i registri sono a 32 bit, per cui se prelevo un indirizzo dalla memoria, perdendo gli 8 bit più significativi, se faccio accesso all'indirizzo caricato, posso confonderlo con uno più piccolo)
 \\
 \\
 La memoria, quindi memorizza varie tipologie di dati e di istruzioni. Pertanto è corretto dividere la memoria rispetto a queste due parti, per cui, la memoria sarà organizzata da due principali parti:
