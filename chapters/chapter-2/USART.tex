@@ -19,7 +19,7 @@ Nel caso della comunicazione di tipo Sincrona, i due dispositivi (per una comuni
     \item clk\_t -> clk\_r
 \end{itemize}
 
-Questo perchè una comunicazione sincrona sfrutta un segnale di tempificazione comune. La velocità di trasmissione dei dati è quindi dettata dalla frequenza del clock comune. A differenza della comunicazione \textbf{Asincrona}, la comunicazione sincrona è molto più veloce e robusta (data la sincronizzazione in hardware tramite il clock condiviso), ma è molto difficile da implementare a livello hardware, poichè bisogna sincronizzare in maniera molto precisa dati e trasmissione di essi.
+Questo perchè una comunicazione sincrona sfrutta un segnale di tempificazione comune. La velocità di trasmissione dei dati è quindi dettata dalla frequenza del clock comune. A differenza della comunicazione \textbf{asincrona}, la comunicazione sincrona è molto più veloce e robusta (data la sincronizzazione in hardware tramite il clock condiviso), ma è molto difficile da implementare a livello hardware, poichè bisogna sincronizzare in maniera molto precisa dati e trasmissione di essi.
 
 \subsubsection{Comunicazione Asincrona}
 Nel caso della comunicazione di tipo Asincrona, i due dispositivi richiedono un singolo collegamento (sempre ragionando sul singolo canale trasmissivo Tx -> Rx).
@@ -43,12 +43,12 @@ I segnali \textbf{DTR} e \textbf{DSR}, sono pin che vanno ad implementare l'hand
 \subsubsection{Errori principali presenti nella comiunicazione seriale}
 Quando si fanno interagire due sistemi mediante una comunicazione di tipo seriale asincrona (UART), in fase di ricezione, si può andare in contro ai seguenti tipi di errori:
 \begin{itemize}
-    \item \textbf{Errore di parità}: Il valore del bit di parità inviato non corrisponde con quello calcolato al ricevitore
-    \item \textbf{Errore di framing}: Non è previsto il bit di stop
-    \item \textbf{Errore di Overruning}: Errore dovuto alla differenza dei clock di invio. Se il sistema ricevente è più lento del sistema trasmittente, allora si può avere perdita di informazioni (non si coglie bene il bit di start)
+    \item \textbf{Errore di parità}: Il valore del bit di parità inviato non corrisponde con quello calcolato al ricevitore;
+    \item \textbf{Errore di framing}: Non è previsto il bit di stop;
+    \item \textbf{Errore di Overruning}: Errore dovuto alla differenza dei clock di invio. Se il sistema ricevente è più lento del sistema trasmittente, allora si può avere perdita di informazioni (non si coglie bene il bit di start);
 \end{itemize}
 
-Tra questi errori l'unico su cui si può attuare un miglioramento è quello di overrun, questo perchè si può prevedere che il dato venga trasmesso secondo uno specifico protocollo di handshacking. Difatti nelle architetture sono presenti appositi collegamenti per l'implementazione di tale soluzione, anche se quest'ultima rallenta un po la ricezione rendendola meno efficente.
+Tra questi errori l'unico su cui si può attuare un miglioramento è quello di overrun, questo perchè si può prevedere che il dato venga trasmesso secondo uno specifico protocollo di handshacking. Difatti nelle architetture sono presenti appositi collegamenti per l'implementazione di tale soluzione, anche se quest'ultima rallenta un po la ricezione rendendola meno efficiente.
 
 \subsection{Intel 8251A}\label{par:intel-8251A}
 L'Intel 8251A è un dispositivo programmabile che permette la comunicazione tra la CPU e una qualunque periferica seriale che utilizza lo standard RS-232. Tale dispositivo riceve i dati da trasmettere in maniera parallela dalla CPU, per poi inviarli in maniera seriale attraverso l'utilizzo del protocollo selezionato in una prima fase di configurazione (per questo programmabile). 
@@ -62,11 +62,11 @@ La sua struttura principale è quella visualizzabile nella figura [\ref{img:Inte
 
 In tale struttura logica notiamo vari blocchi differenti, ovvero:
 \begin{itemize}
-    \item \textbf{Data Bus Buffer}: Buffer in cui vengono conservari i dati (o in ricezione o in trasmissione), in generale la comunicazione con tale blocco avviene in maniera parallela
+    \item \textbf{Data Bus Buffer}: Buffer in cui vengono conservari i dati (o in ricezione o in trasmissione), in generale la comunicazione con tale blocco avviene in maniera parallela;
     \item \textbf{Read/Write Control Logic}: Componente di controllo dell'intero sistema, va a creare un interfaccia di utilizzo degli elementi interni del dispositivo per la CPU. Vedendo meglio il significato dei vari pin:
     \begin{itemize}
-        \item \textbf{Reset}: Pin che permette alla CPU di resettare tutti i registri interni al dispositivo
-        \item \textbf{Clk}: Segnale di tempificazione per il dispositivo
+        \item \textbf{Reset}: Pin che permette alla CPU di resettare tutti i registri interni al dispositivo;
+        \item \textbf{Clk}: Segnale di tempificazione per il dispositivo;
         \item \textbf{C/D}: Selezione per il registro di controllo o di dato
         \item \textbf{RD e WR}: Segnali che indentificano se si vuole effettuare una lettura o una scrittura
         \item \textbf{CS}: Chip select, utilizzato per abilitare il dispositivo
@@ -105,12 +105,12 @@ Come detto in precedenza, l'Intel 8251A è un dispositivo programmabile, quindi 
 \begin{figure}
     \centering
     \includegraphics[width=.5\textwidth]{img/prog-8251A.png}
-    \caption{Modello di programmazione dell'8251A}\label{img:prog-8251A}
+    \caption{Modello di programmazione dell'8251A simulato}\label{img:prog-8251A}
 \end{figure}
 
 Da tale figura dobbiamo discriminare due lati, quello sinistro, che è quello che viene connesso direttamente ai bus (e quindi al processore), mentre quello a destra è di interfacciamento verso l'altro dispositivo USART.
 Notiamo che i pin sono identici a quelli spiegati nell'architettura generale dell'8251 [\ref{par:intel-8251A}].
-Una volta visto il modello di programmazione, vado ad inserire il componente nella mia architettura simulata, quindi lo vado ad inserire all'interno del file di configurazione (.cfg). In generale, come anche per prove precedenti, tali file vengono passati da terze parti, nel caso si volessero configurare da 0 si rimanda alla documentazione ufficiale di asim.
+Una volta visto il modello di programmazione, vado ad inserire il componente nella mia architettura simulata, quindi lo vado ad inserire all'interno del file di configurazione (.cfg). In generale, come anche per prove precedenti, tali file vengono passati da terze parti, nel caso si volessero configurare \textit{from scratch} si rimanda al capitolo \ref{par:cfg}.
 I registri con cui ci si va ad interfacciare con il motorola 68K sono:
 \begin{itemize}
     \item \textbf{Mode}: Regsitro di modo con cui posso configurare il funzionamento della USART, quindi selezionare se la comunicazione sia sincrona o asincrona ed il formato dell'informazione da trasmettere (eventuali bit di parità ecc.)
