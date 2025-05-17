@@ -3,48 +3,48 @@ In generale un dispositivo di I/O può essere visto come l'insieme di tre parti 
 
 \begin{itemize}
 
-    \item \textbf{Registri Dato, Stato e Controllo}: Tali registri sono quelli che interagiscono in maniera diretta con la CPU, e vengono utilizzati da quest'ultima per controllare e gestire le informazioni di quel dato dispositivo. Tali registri sono presenti internamente all'architattura del Calcolatore (ad esempio sulla scheda madre)
+    \item \textbf{Registri Dato, Stato e Controllo}: Tali registri sono quelli che interagiscono in maniera diretta con la CPU, e vengono utilizzati da quest'ultima per controllare e gestire le informazioni di quel dato dispositivo. Tali registri sono presenti internamente all'architattura del Calcolatore (ad esempio sulla scheda madre);
 
-    \item \textbf{Sistema di adattamento}: Il sistema di adattamento adatta i segnali provenienti dal mondo esterno per essere letti o scritti nei registri di Dato, Stato e Controllo, e quindi permette di adattare l'attacco esterno (tipo l'USB che utilizza comunicazioni sequenziali), con la comunicazione parallela che il processore ha con i registri
+    \item \textbf{Sistema di adattamento}: Il sistema di adattamento adatta i segnali provenienti dal mondo esterno per essere letti o scritti nei registri di Dato, Stato e Controllo, e quindi permette di adattare l'attacco esterno (tipo l'USB che utilizza comunicazioni sequenziali), con la comunicazione parallela che il processore ha con i registri;
 
-    \item \textbf{Mondo esterno}: Per mondo esterno si intende tutta la parte che interagisce con il dispositivo in maniera fisica, ed il dispositivo fisico stesso. Quindi immaginiamoci anche una tastiera con il suo connettore USB
+    \item \textbf{Mondo esterno}: Per mondo esterno si intende tutta la parte che interagisce con il dispositivo in maniera fisica, ed il dispositivo fisico stesso. Quindi immaginiamoci anche una tastiera con il suo connettore USB.
 
 \end{itemize}
 
 Un esempio di dispositivo esterno è la memoria HDD.
 La memoria HDD ha difatti i tre registri di Dato, Stato e Controllo, quando si vuole scrivere su tale memoria, la CPU va a modificare i registri in modo da garantire tale operazione. Mentre la CPU modifica tali dati, il sistema di adattamento converte i dati presenti in quei tre registri in movimenti della testina + scrittura, rispettando sempre i controlli dati dalla CPU. La scrittura/lettura dei dati tramite la testina e la testina stessa rappresentano, invece, il mondo esterno.
-Un altro esempio di periferica è la classica porta UART, che trasmette i sui dati in serie, ma il suo controllo avviene in parallelo. Pertanto al suo interno avrà sia un timer per scandire il clock in base alla tipologia di comunicazione, e poi avrà un buffer parallelo serie, che converte l'informazione da trasmettere in tanti bit seriali. Oltre alla parte parallelo-serie sarà anche dotato di una parte serie-parallelo, nel caso della ricezione.
+Un altro esempio di periferica è la classica porta \textbf{UART}, che trasmette i sui dati in serie, ma il suo controllo avviene in parallelo. Pertanto al suo interno avrà sia un timer per scandire il clock in base alla tipologia di comunicazione, e poi avrà un buffer parallelo-serie, che converte l'informazione da trasmettere in tanti bit seriali. Oltre alla parte parallelo-serie sarà anche dotato di una parte serie-parallelo, nel caso della ricezione.
 
 
 \subsection{Modalità di comunicazione}
 Le tipologie di collegamento che si possono avere tra un processore e le sue periferiche sono le seguenti:
 \begin{itemize}
-    \item \textbf{Collegamento passivo}: la periferica e la CPU non condividono alcun tipo di comunicazione. Quindi la CPU presuppone che la periferica sia sempre pronta ed è quindi solo lei a decidere quando e come utilizzare i dati, anche se questi magari non sono pronti o ben processati
-    \item \textbf{Collegamento Sincrono}: La periferica e la CPU comunicano tra loro, la comunicazione è sincronizzata da un clock comune
-    \item \textbf{Collegamento con Handshacking}: L'handshackin è una modalità di sincronizzazione asincrona, poichè si sfruttano dei segnali di comunicazione tra la CPU e la periferica che permettono di capire quando il dato è "pronto" o meno. Una classica implementazione è quella del segnale di req che viene alzato dal processore per far capire che vuole leggere e dall'ack emanato dalla periferica che fa comprendere che il dato è pronto o che è stata presa in carico l'operazione
-    \item \textbf{Collegamento semisincrono}: Si condividono le stesse modalità di una comunicazione con handshacking, con la differenza che la sincronizzazione delle due parti avviene mediante uno stesso clock
+    \item \textbf{Collegamento passivo}: la periferica e la CPU non condividono alcun tipo di comunicazione. Quindi la CPU presuppone che la periferica sia sempre pronta ed è quindi solo lei a decidere quando e come utilizzare i dati, anche se questi magari non sono pronti o ben processati;
+    \item \textbf{Collegamento Sincrono}: La periferica e la CPU comunicano tra loro, la comunicazione è sincronizzata da un clock comune;
+    \item \textbf{Collegamento con Handshacking}: L'handshacking è una modalità di comunicazione asincrona, poichè si sfruttano dei segnali di comunicazione tra la CPU e la periferica che permettono di capire quando il dato è "pronto" o meno. Una classica implementazione è quella del segnale di \textit{req} che viene alzato dal processore per far capire che vuole leggere e dall'\textit{ACK} alzato dalla periferica che fa comprendere che il dato è pronto o che è stata presa in carico una determinata operazione richiesta. La differenza con la comunicazione sincrona è l'assenza di base dei tempi comune (clock);
+    \item \textbf{Collegamento semisincrono}: Si condividono le stesse modalità di una comunicazione con handshacking, con la differenza che la sincronizzazione delle due parti avviene mediante uno stesso clock;
 \end{itemize}
 
 \subsection{Interfacciamento CPU e periferica}
 Per utilizzare le periferiche la CPU deve poter accedere ai registri di Dato, Stato e Controllo di tali periferiche. Le tipologie di interfacciamento che ci possono essere tra CPU e Periferica sono:
 \begin{itemize}
-    \item \textbf{Memory Mapped I/O}: La CPU fa riferimento ai registri di Dato, Stato e Controllo di una periferica come se fossero dei registri in memoria
-    \item \textbf{I/O Mapped}: La CPU ha specifici comandi per interagire con le periferiche di I/O
+    \item \textbf{Memory Mapped I/O}: La CPU fa riferimento ai registri di Dato, Stato e Controllo di una periferica come se fossero dei registri in memoria;
+    \item \textbf{I/O Mapped}: La CPU dispone di specifici codice operativi per interagire con le periferiche di I/O;
 \end{itemize}
 
-Nel nostro caso il Motorola 68k è una tipologia di architettura memory mapped, e quindi la trattazione dei registri avviene mediante i classici comandi di spostamento già utilizzati
+Nel nostro caso il Motorola 68k è una tipologia di architettura \textbf{memory mapped}, e quindi la trattazione dei registri avviene mediante i codici operativi di accesso ai registri della memoria. 
 
 \subsubsection{Memory Mapped I/O}
-Nel caso di interfacciamento con una struttura Memory Mapped, l'accesso ai registri di una determinata periferica avvengono tramite i bus di collegamento classici, che collegano anche la memoria ecc. Ciò quindi mi limita nell'utilizzo degli indirizzi, poichè, quando faccio riferimento ad un registro di una periferica, tale indirizzo non deve appartenere al set di indirizzi della memoria centrale
+Nel caso di interfacciamento con una struttura Memory Mapped, l'accesso ai registri di una determinata periferica avvengono tramite i bus di collegamento classici, che collegano anche la memoria ecc. Ciò quindi mi limita nell'utilizzo degli indirizzi, poichè, quando faccio riferimento ad un registro di una periferica, tale indirizzo non deve appartenere al set di indirizzi della memoria centrale.
 
 \subsubsection{I/O Mapped}
-Nel caso di interfacciamento con una struttura I/O Mapped, l'accesso ai registri di una determinata periferica avviene mediante degli specifici comandi. Questo perchè le periferiche sono collegate a bus dedicati o hanno una gestione dedicata, che quindi differisce dalle comunicazioni che avvengono in generale all'interno dell'architettura al costo di avere meno modi di indirizzamento, dato che non si userà più la MOVE che è un codice operativo ortogonale
+Nel caso di interfacciamento con una struttura I/O Mapped, l'accesso ai registri di una determinata periferica avviene mediante degli specifici comandi. Questo perchè le periferiche sono collegate a bus dedicati o hanno una gestione dedicata, che quindi differisce dalle comunicazioni che avvengono in generale all'interno dell'architettura al costo di avere meno modi di indirizzamento, dato che non si userà più la MOVE che è un codice operativo \textit{ortogonale}.
 
 \subsubsection{Logiche di selezione}
 Quando devo selezionare la mia periferica a cui faccio riferimento, utilizzo una serie di indirizzi. Tali indirizzi possono essere utili al fine di realizzare i seguenti tipi di logica:
 \begin{itemize}
-    \item \textbf{Logica tristate}: Logica che quando una periferica non vede il suo indirizzo sui bus adeguati smette di interagire con il sistema, quindi ignora la variazione dei dati sul bus. Tale logica, quindi utilizza l'indirizzo interno della nostra periferica
-    \item \textbf{Logica Plug-and-play}: L'indirizzo della periferica viene scelto in base ad una serie di indirizzi disponibili
+    \item \textbf{Logica tristate}: Logica che quando una periferica non vede il suo indirizzo sui bus adeguati smette di interagire con il sistema, quindi ignora la variazione dei dati sul bus. Tale logica, quindi utilizza l'indirizzo interno della nostra periferica.
+    \item \textbf{Logica Plug-and-play}: L'indirizzo della periferica viene scelto in base ad una serie di indirizzi disponibili.
 \end{itemize}
 
 \subsection{BUS}
@@ -53,19 +53,19 @@ In generale non vi è una tipologia unica di bus, ve ne sono varie in base alla 
 I bus, si contraddistinguono principalmente per la divisione che attuano sui loro collegamenti, ma in generale, le informazioni che vengono trasportate sono solitamente le stesse.
 Le informazioni, quindi, sono dipartite tra i vari collegamenti presenti in un BUS. I collegamenti generici che si possono identificare in un bus sono:
 \begin{itemize}
-    \item \textbf{Alimentazione}: Collegamenti che principalmente comprendono la VCC (o più VCC), che sarebbero le tensioni di alimentazione delle componenti; ed il cavo di terra (o GND)
-    \item \textbf{Dati}: Collegamenti che trasportano i dati che vengono interscambiati tra i vari dispositivi
-    \item \textbf{Indirizzo}: Collegamenti che trasportano gli indirizzi che permettono la selezione dei dispositivi interessati o dei registri a cui si vuole accedere
-    \item \textbf{Controllo}: Collegamenti che trasportano le informazioni inerenti alla tipologia di operazione che si vuole effettuare
-    \item \textbf{Stato}: Collegamenti che permettono il controllo di flusso e la segnalazione di eventuali conflitti o errori
+    \item \textbf{Alimentazione}: Collegamenti che principalmente comprendono la VCC (o più VCC), che sarebbero le tensioni di alimentazione delle componenti, ed il cavo di terra (o GND);
+    \item \textbf{Dati}: Collegamenti che trasportano i dati che vengono scambiati tra i vari dispositivi;
+    \item \textbf{Indirizzo}: Collegamenti che trasportano gli indirizzi che permettono la selezione dei dispositivi interessati o dei registri a cui si vuole accedere in lettura o scrittura;
+    \item \textbf{Controllo}: Collegamenti che trasportano le informazioni inerenti alla tipologia di operazione che si vuole effettuare;
+    \item \textbf{Stato}: Collegamenti che permettono il controllo di flusso e la segnalazione di eventuali conflitti o errori;
 \end{itemize}
 
-Data una tipologia di bus, può capitare che la periferica che vado ad utilizzare non è ad-hoc per quella determinata tipologia di bus. Pertanto, quello che posso fare, è considerare l'utilizzo di un \textbf{adapter}, che mi permette di adattare il bus classico con la tipologia di attacco specifica per la mia periferica. Oltretutto in alcuni casi, quando il dispositivo non permette la configurazione degli indirizzi, per evitare conflitti, l'adapter gestisce anche la gestione di tale indirizzo rispetto al sistema
+Data una tipologia di bus, può capitare che la periferica che vado ad utilizzare non è ad-hoc per quella determinata tipologia di bus. Pertanto, quello che posso fare, è considerare l'utilizzo di un \textbf{adapter}, che mi permette di adattare il bus classico con la tipologia di attacco specifica per la mia periferica. Oltretutto in alcuni casi, quando il dispositivo non permette la configurazione degli indirizzi, per evitare conflitti, l'adapter gestisce anche la gestione di tale indirizzo rispetto al sistema.
 
 \subsection{Driver}
 I driver sono dei programmi che permettono di capire come il processore vada ad utilizzare una determinata periferica.
 Le tipologie di approccio che si possono avere nella scrittura dei driver sono varie, la più primitiva è il polling.
-Il \textbf{Polling} è un modo con cui il processore va ad interagire con la periferica. In generale si va a dare un primo segnale di controllo alla periferica e si aspetta uno specifico valore di stato per poter accedere al dato. Tali sistema è altamente inefficiente, poichè mentre la CPU aspetta la riposta della periferica passano dei periodi di clock dove la CPU rimane ferma. Il tempo che quindi la CPU rimane senza eseguire delle operazioni utili è detto \textbf{Busy-waiting}. Un possibile codice di implementazione del polling è [\ref{m68:polling}]
+Il \textbf{Polling} è un modo con cui il processore va ad interagire con la periferica. In generale si va a dare un primo segnale di controllo alla periferica e si aspetta uno specifico valore di stato per poter accedere al dato. Tali sistema è altamente inefficiente, poichè mentre la CPU aspetta la riposta della periferica passano dei periodi di clock dove la CPU rimane in attesa. Il tempo che quindi la CPU rimane senza eseguire delle operazioni utili è detto \textbf{Busy-waiting}. Un possibile codice di implementazione del polling è [\ref{m68:polling}]
 
 \begin{lstlisting}[caption={Codice polling}, label=m68:polling]
         ORG      $8000
@@ -77,7 +77,7 @@ Il \textbf{Polling} è un modo con cui il processore va ad interagire con la per
         MOVE.W  #0,D0
 *Devo prelevare N dati quindi ciclo N volte
 FOR     CMP.W   #N,D0
-        BGE   FUORI
+BGE   FUORI
 
 *Qui devo scrivere il driver sapendo  che devo ricevere un byte
 
@@ -92,8 +92,9 @@ L1      MOVE.B  S,D1
         MOVE.B  #$00,C  *Vado a resettare il segnale di Controllo
         MOVE.B  #$00,S  *Vado ad "eludere" il sistema su un segnale di stato
 
-FUORI   ADD.B  #1,D0             *Incremento il conteggio
+        ADD.B  #1,D0             *Incremento il conteggio
         BRA  FOR                 *Ripeti
+FUORI
 
         ORG     $8100
 D       DS.B    1   *Registro dato
@@ -106,9 +107,9 @@ VAR1    DS.B    5   *Array effettivo di raccolta dati
 \newpage
 Il codice [\ref{m68:polling}] presenta però le seguenti criticità:
 \begin{itemize}
-    \item \textbf{Mancata Generalizzazione}: Si vanno a considerare in maniera diretta i registri in memoria D,S e C. Che per l'implmentazione di un driver riutilizzabile non è proprio la scelta corretta
-    \item \textbf{Polling}: L'attesa che viene svolta all'interno di tale codice non permette al processore di eseguire altri passi prima di aver ricevuto tutti i caratteri
-    \item \textbf{Gestione dei malfunzionamenti}: Se la periferica ha un qualunque tipo di malfunzionamento e quindi non aggiorna mai il registro di stato, tale ciclo eseguirà all'infinito senza mai fermarsi
+    \item \textbf{Mancata Generalizzazione}: Si vanno a considerare in maniera diretta i registri in memoria D,S e C. Che per l'implmentazione di un driver riutilizzabile non è proprio la scelta corretta. Uno stesso dispositivo accessibile mediante diversi indirizzi avrebbe bisogno di un driver diverso;
+    \item \textbf{Polling}: L'attesa che viene svolta all'interno di tale codice non permette al processore di eseguire altre operazioni prima di aver ricevuto tutti i caratteri;
+    \item \textbf{Gestione dei malfunzionamenti}: Se la periferica ha un qualunque tipo di malfunzionamento e quindi non aggiorna mai il registro di stato, tale ciclo eseguirà all'infinito senza mai fermarsi;
 \end{itemize}
 
 Le due problematiche (o criticità), possono essere affrontate in vario modo. Per la prima la soluzione è molto semplice, al posto di andare a considerare i registri di Dato, Stato e Controllo in maniera diretta, possono essere considerati come registri indirizzo (Ai), a cui vado ad associare gli indirizzi di tali registri. Tali inidirizzi poi vengono settati secondo un determinato criterio prima della chiamata al driver.
@@ -211,9 +212,9 @@ Il funzionamento generale della fase di \textbf{handshaking} tra due dispositivi
 Per fare chiarezza andremo a dividere la fase di ricezione dalla fase di trasmissione.
 In fase di \textbf{trasmissione} le operazioni che si vanno ad effettuare sonno le seguenti:
 \begin{itemize}
-    \item \textbf{Inserimento del dato}: La periferica posiziona il dato sul bus dati collegato in maniera diretta con la PIA. Una volta effettuato l'inserimento, la periferica tramite la linea CA1 invia un segnale di \textit{dato pronto} alla PIA, quindi sulla transizione di CA1, in accordo alla configurazione, si propaga un'interruzione al processore. Internamente, la periferica alzerà CA2 (in accordo al protocollo handshaking 100).
-    \item \textbf{Attesa dell'ack}: Il sistema aspetta che l'ack si abbassi per capire che il dato è stato inviato correttamente. Una volta ottenuto l'ACK, la PIA abbassa (dopo una lettura fittizia) CA2, che viene interpretato dalla periferica come \textit{registro dati libero}.
-    \item \textbf{Lettura fittizia}: Dato che voglio inviare un nuovo dato, ho bisogno di abbassare il bit CRA7, ma non posso farlo in maniera diretta (configurando un apposito registro di controllo), poichè il bit CRA7 è buona norma che sia in sola lettura. Di conseguenza per abbassare tale valore vado ad effettuare una lettura a vuoto (o lettura fittizzia), che mi permette di abbassare il bit CRA7 e la linea CA2 in modo da poter proseguire nelle operazioni.
+    \item \textbf{Inserimento del dato}: La periferica posiziona il dato sul bus dati collegato in maniera diretta con la PIA. Una volta effettuato l'inserimento, la periferica tramite la linea CA1 invia un segnale di \textit{dato pronto} alla PIA, quindi sulla transizione di CA1, in accordo alla configurazione, si propaga un'interruzione al processore. Internamente, la periferica alzerà CA2 (in accordo al protocollo handshaking 100);
+    \item \textbf{Attesa dell'ack}: Il sistema aspetta che l'ack si abbassi per capire che il dato è stato inviato correttamente. Una volta ottenuto l'ACK, la PIA abbassa (dopo una lettura fittizia) CA2, che viene interpretato dalla periferica come \textit{registro dati libero};
+    \item \textbf{Lettura fittizia}: Dato che voglio inviare un nuovo dato, ho bisogno di abbassare il bit CRA7, ma non posso farlo in maniera diretta (configurando un apposito registro di controllo), poichè il bit CRA7 è buona norma che sia in sola lettura. Di conseguenza per abbassare tale valore vado ad effettuare una lettura a vuoto (o lettura fittizzia), che mi permette di abbassare il bit CRA7 e la linea CA2 in modo da poter proseguire nelle operazioni;
 \end{itemize}
 
 Nella fase di ricezione, invece, si ha:
@@ -250,13 +251,13 @@ Tali registri saranno utilizzati all'interno delle ISR per poter controllare/com
     \item \textbf{Gestione}: Vengono definite le modalità di funzionamento in base alla tipologia di filosofia adottata.
 \end{itemize}
 
-Un main che è uguale ad entrambe le tipologie di comportamento (interruzioni e polling) è il seguente:
+Un main che è uguale in entrambe le tipologie di comportamento (interruzioni e polling) è il seguente:
 \begin{lstlisting}
 *MAIN
 MAIN	JSR    DVBOUT	*Configurazione della PIA
 \end{lstlisting}
 
-Per la fase di configurazione, la procedura rimane la stessa a meno della maschera, pertanto viene riportato qui il caso con maschera e saranno riaffrontate le due differenti gestioni all'interno degli appositi sottocapitoli [\ref{par:PIA-INT}] e [\ref{par:PIA-POL}].
+Per la fase di configurazione, la procedura rimane la stessa a meno della maschera, pertanto viene riportato qui il caso con maschera e saranno riaffrontate le due differenti gestioni all'interno degli appositi paragrafi [\ref{par:PIA-INT}] e [\ref{par:PIA-POL}].
 \begin{lstlisting}
 DVBOUT      MOVE.B      #0,PIACB		*seleziona il registro direzione di PIA porto B 
 MOVE.B      #$FF,PIADB	  		*accede a DRB e pone DRA=1 : le linee di B sono linee di output	
@@ -453,10 +454,10 @@ Una volta ricevuto l'ACK, il PIC setta il bit del registro \textbf{ISR} corrispo
 \begin{itemize}
     \linespread{0.4}
     \item \textit{automaticamente}, se è stata selezionata la modalità \textit{automatic end of interrupt};
-    \item \textit{manualmente}, settando un bit opportuno EOI tramite una parola di controllo appena prima di uscire dalla ISR.
+    \item \textit{manualmente}, settando un bit opportuno EOI tramite una parola di controllo appena prima di uscire dalla ISR. \uppercase{è} importante osservare che nel componente simulato in ASIM funziona solo questa modalità.
 \end{itemize}
 
-Attraverso i blocchi \textbf{Data Bus Buffer} (linee D0-D7) e \textbf{R/W logic} (linea !RD, !WR, A0, !CS) è possibile accettare due tipi di command word proveniente dalla CPU:
+Attraverso i blocchi \textbf{Data Bus Buffer} (linee D0-D7) e \textbf{R/W logic} (linea $ \overline{RD}, \overline{WR}, A0, \overline{CS} $) è possibile accettare due tipi di command word proveniente dalla CPU:
 \begin{itemize}
     \item \textbf{ICW}s: Initialization Command Words, che servono ad \textit{inizializzare} il dispositivo con una sequenza di minimo due e massimo quattro comandi di inizializzazione.
     \begin{itemize}
@@ -479,7 +480,7 @@ Dal punto di vista esercitativo, al corso è stato presentato un componente da u
 Il device simulato presenta 8 linee di richiesta, a ciascuna delle quali è associata una priorità fissa (modalità \textit{fully nested}), a cui possono essere connessi fino a 8 dispositivi con 8 livelli di priorità, stabiliti mediante lo schema \textit{daisy chain}. 
 Il modello di programmazione del dispositivo occupa due locazioni consecutive di memoria e prevede 5 registri accessibili al programmatore. \\
 
-
+\vspace{1cm}
 \begin{tabular}{|p{3cm}|p{10cm}|}
     \hline
     \centering \textbf{IMR} &  (Interrupt Mask Register) permette di mascherare singolarmente le interruzioni \\
@@ -494,7 +495,7 @@ Il modello di programmazione del dispositivo occupa due locazioni consecutive di
     \hline
 \end{tabular}
 
-
+\vspace{1cm}
 % Il modo di operazione scelto deve essere configurato in fase di inizializzazione del PIC, ma può anche essere dinamicamente cambianto da un apposito programma di gestione. Per i registri interni al PIC facciamo riferimento alla figura \ref{img:PIC2}.
 % L’Interrupt Request Register (IRR) riceve in ingresso le 8 linee di interruzione provenienti dalle periferiche collegate e ne memorizza lo stato. L’input a questo registro è gestito da un circuito integrato che si occupa della gestione prioritaria delle interruzioni, mentre l’output è il registro In Service Register (ISR) in cui vengono memorizzati solo i segnali di interruzione da servire in accordo alla maschera (IMR). Il Type Register (TR) è un registro di 8 bit che memorizza nei 5 bit più significativi il valore base del vettore da scrivere in output sul bus dati, mentre nei 3 meno significativi uno spiazzamento in accordo alla linea interrompente. Dopo il servizio, l’i-esimo bit di IRR è automaticamente cancellato per riuovere la causa di interruzione.
 
@@ -515,7 +516,7 @@ Il modello di programmazione del dispositivo occupa due locazioni consecutive di
 
 Vediamo nel dettaglio il funzionamente di questi registri:
 \begin{itemize}
-    \item \textbf{TYPE REGISTER}: contiene informazioni sui vettori di interruzione associati al PIC. I vettori si ricavano a partire da un \textit{vector number} di base sommando uno spiazzamento su 3 bit, ovvero i 3 bit meno significativi del registro. Lo spiazzamento viene settato automaticamente in base alla linea interrompente. Praticamente al programmatore è permesso di inserire il numero di base, al quale viene automaticamente sommato uno spiazzamento in base alle linea interrompente.  L’accesso a TR viene fatto selezionando in scrittura  l’indirizzo dispari subito dopo un textit{RESET};
+    \item \textbf{TYPE REGISTER}: contiene informazioni sui vettori di interruzione associati al PIC. I vettori si ricavano a partire da un \textit{vector number} di base sommando uno spiazzamento su 3 bit, ovvero i 3 bit meno significativi del registro. Lo spiazzamento viene settato automaticamente in base alla linea interrompente. Praticamente al programmatore è permesso di inserire il numero di base, al quale viene automaticamente sommato uno spiazzamento in base alle linea interrompente.  L’accesso a TR viene fatto selezionando in scrittura  l’indirizzo dispari subito dopo un \textit{RESET};
     \item \textbf{INTERRUPT MASK REGISTER}: memorizza le linee di interruzione che devono essere mascherate. Per mascherare una linea basta inserire un 1 nel bit corrispondente. IMR è accessibile sia in lettura che in scrittura ad indirizzo dispari, ma in scrittura il dispositivo non deve essere nello stato \textit{reset}, ovvero deve essere già stato scritto almeno TR;
     \item \textbf{CONTROL REGISTER}: registro da 8 bit accessibile sempre in scrittura ad indirizzo pari:
     \begin{itemize}
