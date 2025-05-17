@@ -113,10 +113,10 @@ Notiamo che i pin sono identici a quelli spiegati nell'architettura generale del
 Una volta visto il modello di programmazione, vado ad inserire il componente nella mia architettura simulata, quindi lo vado ad inserire all'interno del file di configurazione (.cfg). In generale, come anche per prove precedenti, tali file vengono passati da terze parti, nel caso si volessero configurare \textit{from scratch} si rimanda al capitolo \ref{par:cfg}.
 I registri con cui ci si va ad interfacciare con il motorola 68K sono:
 \begin{itemize}
-    \item \textbf{Mode}: Regsitro di modo con cui posso configurare il funzionamento della USART, quindi selezionare se la comunicazione sia sincrona o asincrona ed il formato dell'informazione da trasmettere (eventuali bit di parità ecc.)
-    \item \textbf{CTRL}: Registro di controllo, che permette di poter pilotare i segnali di utilizzo della USART, utile per quando si devono implementare sistemi che utilizzano handshacking ecc.
-    \item \textbf{SYNCH-1}: Registro di Sincronizzazione, utilizzato nella comunicazione sincrona per prevedere l'arrivo del primo simbolo di sincronizzazione
-    \item \textbf{SYNCH-2}: Registro di sincronizzazione, utilizzato nella comunicazione sincrona per prevedere l'arrivo dell'eventuale secondo simbolo di informazione (dipende dalla modalità che si è settata)
+    \item \textbf{Mode}: Regsitro di modo con cui posso configurare il funzionamento della USART, quindi selezionare se la comunicazione sia sincrona o asincrona ed il formato dell'informazione da trasmettere (eventuali bit di parità ecc.);
+    \item \textbf{CTRL}: Registro di controllo, che permette di poter pilotare i segnali di utilizzo della USART, utile per quando si devono implementare sistemi che utilizzano handshacking ecc.;
+    \item \textbf{SYNCH-1}: Registro di Sincronizzazione, utilizzato nella comunicazione sincrona per prevedere l'arrivo del primo simbolo di sincronizzazione;
+    \item \textbf{SYNCH-2}: Registro di sincronizzazione, utilizzato nella comunicazione sincrona per prevedere l'arrivo dell'eventuale secondo simbolo di informazione (dipende dalla modalità che si è settata);
 \end{itemize}
 
 Per accedere a tali registri di gestione del dispositivo si fa riferimento all'indirizzo dispari messo a disposizione all'interno del file di configurazione. In generale, tali registri, non hanno ognuno il suo puntatore, ma condividono lo stesso indirizzo, che, in base alla tipologia di funzionamento e di impostazione ne permette l'accesso. Precisamente, ogni volta che si fa un accesso in scrittura all'indirizzo dispari si segue l'ordine che è mostrato all'interno dell'immagine [\ref{img:accesso-registri}].
