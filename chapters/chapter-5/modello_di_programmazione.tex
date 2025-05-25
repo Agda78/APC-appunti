@@ -1,0 +1,8 @@
+\section{Modello di programmazione}
+ARM v-7 è un'architettura RISC a 32 bit, in cui la maggior parte delle istruzioni esegue in un solo colpo di clock. L'insieme di registri è \textbf{Ortogonale} (quando si afferma che l'insieme dei registri di un processore è ortogonale, si intende che tutti i registri possono essere utilizzati in modo intercambiabile all'interno delle istruzioni della CPU. In altre parole, ogni istruzione che opera sui registri può essere applicata a qualsiasi registro, senza restrizioni o privilegi particolari per alcuni di essi). Inoltre è un architettura \textit{load-store}, ovvero si può accedere alla memoria principale solo attraverso le due istruzioni load e store, mentre tutte le altre istruzioni operano su registri interni del processore (scelta tipica delle architetture RISC). 
+Molte architetture ARM supportano due famiglie di istruzioni:
+\begin{itemize}
+    \item ARM Native - set di istruzioni a 32 bit;
+    \item Thumb - set di istruzioni a 16/32 bit, meno efficienti ma in generale più compatte, ideali per sistemi in cui è fondamentale il management della memoria. 
+\end{itemize}
+
