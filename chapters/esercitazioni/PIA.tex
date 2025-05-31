@@ -211,7 +211,7 @@ ISR a \$8800 associata all' interrupt di liv. 4  \#vect 28  mappato a \$70 della
         CMP.B	D1,D0
         BEQ	FINE
         
-    INVIO	MOVE.B	(A1),D2            ;lettura fittizia da PRB => serve per azzerare CRB7 dopo il primo carattere, altrimenti resta settato con l'ack
+    INVIO	MOVE.B	(A1),D2            ;lettura fittizia da PRB => serve per azzerare CRB7 dopo il primo carattere, altrimenti resta settato con l ack
         MOVE.B	(A0,D1),(A1)	;carattere corrente da trasferire in D2;
     *					;dato su bus di PIA porto B: dopo la scrittura di PRB, CB2 si abbassa
                     
@@ -316,7 +316,7 @@ ISR associata all'interrupt di liv. 1, \#vect 25 mappato a \$64 della ROM con IS
                 
     *fine trasferimento e handshaking
         
-        CMP.B   	#13,D0		;Se il carattere ricevuto e' ENTER	
+        CMP.B   	#13,D0		;Se il carattere ricevuto  ENTER	
         BNE     	INPUT		;termina altrimenti prossimo carattere
         ORI.B	#$1C,TERC		;riabilita tastiera ,pulisce buffer e video
         MOVE.L 	(A7)+,D1		;ripristino di D0,D1,A2,A1,A0
@@ -348,7 +348,7 @@ ISR a \$8600 associata all'interrupt di livello 2 \#vect (24+2) => mappato a 4*2
     SWAP	MOVE.B	(A0),D0			;acquisisci dato da terminal
     
     *trasferisci il carattere letto alla PIA-B con handshaking
-        MOVE.B  (A1),D1         ;lettura fittizia => serve per azzerare CRB7 dopo il primo carattere, altrimenti resta settato con l'ack
+        MOVE.B  (A1),D1         ;lettura fittizia => serve per azzerare CRB7 dopo il primo carattere, altrimenti resta settato con l ack
         MOVE.B  D0,(A1)         ;Dato su bus di PIA porto B: dopo la scrittura di PRB, CB2 si abbassa
     *							;cio fa abbassare CA1 sulla porta gemella dell'altro sistema generando 
     *							;un'interruzione che coincide con il segnale DATA READY

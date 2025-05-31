@@ -1,7 +1,7 @@
 \section{BUS e protocolli}
 In questa sezione presentiamo i bus e i protocolli visti a lezione inerenti all'architettura ARM utilizzata sul SoC.
 
-\subsection{$I^2 C$}
+\subsection{I2C}
 $I^2 C$ (Inter-Integrated Circuit) è un sistema di comunicazione seriale nato negli anni '80 sincrono utilizzato tra circuiti integrati. Risponde alla problematica di ridurre il più possibile il numero di cavi in una comunicazione seriale, ed è utilizzata per interconnettere sensori ad un'architettura principale. Come tutti i sistemi seriali, è sincrono. 
 Questo protocollo/bus distingue i device in \textit{Master}, che iniziano la comunicazione, e \textit{Slave}. Questo sistema prevede più device master connessi allo stesso bus. Tecnicamente prevede due segnali, uno per la trasmissione dei dati e uno per il segnale di sincronizzazione. Il limite principale di questo protocollo è la velocità di trasmissione. 
 

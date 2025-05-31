@@ -37,7 +37,7 @@ Questo meccanismo è pericoloso in quanto permette il DeadLock. Serve un meccani
 
 vediamo lo pseudocodice relativo alla ISRB:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
     if (sem == verde){      \\istruzione atomica TAS
         sem = rosso;
         if (possesso != 1){ \\possesso non di C
@@ -75,7 +75,7 @@ Lo pseudocodice della ISRC è praticamente speculare a quello presentato sopra.
 Un sistema è compoto da 3 unità (A,B,C) tra loro collegate mediante due periferiche parallele che interconnettono A con B e A con C rispettivamente. Il sistema opera effettuando k iterazioni (k>2), in ciascuna delle quali A deve ricevere globalmente 2 messaggi di N caratteri da B e 1 messaggio di N caratteri da C (N>2). I messaggi da B e da C possono essere ricebuti in un ordine qualsiasi ma non deve essere mai possibile ricevere caratteri appartenenti a messaggi diversi intervallati tra di loro.
 Vediamo lo pseudocodice relativo alla ISRB:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
     if (sem == verde){      \\istruzione atomica TAS
         sem = rosso;
         if (possesso != 1 && end_B == 0){ 
