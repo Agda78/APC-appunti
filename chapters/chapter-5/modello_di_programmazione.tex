@@ -6,7 +6,7 @@ Molte architetture ARM supportano due famiglie di istruzioni:
     \item Thumb - set di istruzioni a 16/32 bit, meno efficienti ma in generale più compatte, ideali per sistemi in cui è fondamentale il management della memoria. 
 \end{itemize}
 
-ARM ha sette diverse modalità operative, ognuna ha uno stack dedicato ed usa un determinato sottoinsieme di regsitri. Questa scelta è denominata \textbf{Register bamking}: Il register banking nei processori ARM è una tecnica che consiste nell’avere più copie fisiche (banchi) di alcuni registri, usate in base alla modalità di esecuzione o al tipo di eccezione. Questo consente di velocizzare i context switch (cambi di contesto), evitando il salvataggio immediato dei registri in memoria. Lo scopo è quello di ottimizzare il cambio di contesto, evitando di salvare e ripristinare lo stato precedente, passando istantaneamente a un set alternativo di registri già pronti (figura \ref{img:register_banking}).
+ARM ha sette diverse modalità operative, ognuna ha uno stack dedicato ed usa un determinato sottoinsieme di regsitri. Questa scelta è denominata \textbf{Register bamking}: Il register banking nei processori ARM è una tecnica che consiste nell'avere più copie fisiche (banchi) di alcuni registri, usate in base alla modalità di esecuzione o al tipo di eccezione. Questo consente di velocizzare i context switch (cambi di contesto), evitando il salvataggio immediato dei registri in memoria. Lo scopo è quello di ottimizzare il cambio di contesto, evitando di salvare e ripristinare lo stato precedente, passando istantaneamente a un set alternativo di registri già pronti (figura \ref{img:register_banking}).
 
 \begin{figure}[h!]
     \centering
