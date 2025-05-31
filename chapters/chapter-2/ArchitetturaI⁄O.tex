@@ -122,7 +122,7 @@ Tali porti hanno dei registri che sono direzionali, quindi possono assumere una 
 Prima di parlare di più porti ci concentriamo sulle comunicazioni a singolo porto; in generale le comunicazioni che avvengono tra due interfacce della PIA sono configurabili tramite i bit di configurazione del chipset. Nel nostro caso, la comunicazione che maggiormente utilizzeremo è quella dotata di handshacking, per cui si avrà una configuraizone ed un collegamento simile all'immagine [\ref{img:PIA-CON}].
 Il dispositivo PIA simulato in ASIM è derivato da quello commerciale MC6821. Questo è dotato di sei registri a 8 bit, tra cui: due registri per il trasferimento dei dati da e verso la periferica (\textit{PRA} e \textit{PRB}); due registri di controllo/stato (\textit{CRA} e \textit{CRB}); infine due registri per il controllo della direzione dei dati (\textit{DRA} e \textit{DRB}). Questi registri sono accessibili mediante indirizzamento interno secondo la tabella \ref{Tab:reg_ind_1}:
 
-\begin{table} [!h]
+\begin{table} [ht]
     \centering
     \begin{tabular}{|c|c|c|c|c|}
         \hline
@@ -142,7 +142,7 @@ Il dispositivo PIA simulato in ASIM è derivato da quello commerciale MC6821. Qu
 Questi registri sono selezionabili dal processore mediante le linee RS1 ed RS0.
 Nel dettaglio, i registri di contollo sono a 8 bit suddivisi come indicato in tabella \ref{Tab:control_registers}:
 
-\begin{table}[!ht]
+\begin{table}[ht]
     \centering
     \renewcommand{\arraystretch}{1.5} % Aumenta l'altezza delle righe
     \setlength{\tabcolsep}{8pt} % Uniforma la distanza tra colonne
@@ -413,7 +413,7 @@ In generale, nel caso di sistema \textbf{vettorizzato}, viene in aiuto il compon
 Il PIC è un dispositivo che permette di arricchire le
 modalità di gestione delle interruzioni. Grazie alla programmazione di questo oggetto, possiamo assegnare alle varie periferiche non una sola linea di interruzione con una specifica ISR, ma possiamo esplorare tutto il vettore delle interruzioni, che in teoria è costituito da 256 locazioni. In sostanza, il PIC permette di usare \textbf(interrupt vettorizzate), ovvero il dispositivo fornisce sul data bus un vettore di 8 bit che rappresenta l’indice all’interno della tabella delle interruzioni corrispondente all’indirizzo della corretta ISR. Nel M68k questo protocollo è simulato con il PIC: Il dispositivo non scrive sul data bus il vettore di 8 bit, ma comunica l’interruzione al PIC che si occuperà di capire qual è il vettore corrispondente al dispositivo interrotto. Il PIC estende la gestione delle interruzioni del processore M68K introducendo nuove funzionalità, come la gestione prioritaria, la mascheratura delle interruzioni e le linee di interrupt. Il dispositivo ha in uscita verso il processore una linea di interruzione INT e una linea di INTA (acknowledgement) , mentre ha in ingresso 8 linee di interruzioni differenti, a priorità decrescente (0 massima, 7 minima).
 
-\begin{figure} [h!]
+\begin{figure} [ht]
     \centering
     \includegraphics[width=0.5\textwidth]{img/PIC3.png}
     \caption{PIC}\label{img:PIC}
@@ -441,7 +441,7 @@ Osservando i componenti interni in figura \ref{img:82C59A}, notiamo i seguenti c
     \item \textbf{Cascade buffer comparator}: viene utilizzato quando il PIC è collegato ad altri PIC in cascata, e le linee connesse a questo blocco servono a regolare la logica PIC master/slave.
 \end{itemize}
 
-\begin{figure}[h!]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=1\textwidth]{img/PIC_82C59A.png}
     \caption{82C59A}
@@ -507,7 +507,7 @@ Il modello di programmazione del dispositivo occupa due locazioni consecutive di
 % \end{figure}
 
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.7\textwidth]{img/easy_pic.png}
     \caption{PIC semplificato}
@@ -536,7 +536,7 @@ Vediamo nel dettaglio il funzionamente di questi registri:
 Un modello di architettura dotato solo di PIA (\ref{par:PIA}) è limitato: può gestire solo caratteri, ha a disposizione solo 7 interruzioni e può generare attese infinite con il protocollo di handshaking.
 Per risolvere questi problemi, vengono introdotti nuovi elementi nell'architettura: \textbf{DMA} per gestire il trasferimento di messaggi invece di caratteri, \textbf{PIC} (\ref{par:PIC}) per superare la limitazione sul numero di ISR indirizzabili e \textbf{TIMER} per gestire la temporizzazione e il risolvere il problema delle attese infinite (\ref{img:IO_ESTESO}).
 
-\begin{figure}[h!]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.75\textwidth]{img/Schema_IO_1.png}
     \caption{Modello IO esteso - schema logico}

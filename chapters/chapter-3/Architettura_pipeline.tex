@@ -10,7 +10,7 @@ Per comprendere meglio cosa si intende per esecuzione parallela di più istruzio
     \item \textbf{Register write (RW)}: Inserisco i dati che mi interessano dai registri, in memoria. 
 \end{itemize}
 
-\begin{figure}
+\begin{figure}[ht]
     \centering
     \includegraphics[width=.5\textwidth]{img/Pipeline.png}
     \caption{Architettura classica pipeline (ordine di esecuzione fasi)}\label{img:pipe}
@@ -21,7 +21,7 @@ Devo eseguire un programma che ha 5 istruzioni, allora parto con l'esecuzione de
 
 Per fare in modo di isolare l'esecuzione delle varie fasi, tra i vari blocchetti saranno presenti dei registri, che permettono di conservare lo stato su cui una determinata fase sta lavorando (come le architetture pipeline in elettronica [\ref{img:pipe-reg}]). 
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=.5\textwidth]{img/Pipe-reg.png}
     \caption{Architettura classica pipeline con registri}\label{img:pipe-reg}
@@ -84,7 +84,7 @@ Nel precedente capitolo abbiamo visto le fasi di esecuzione di un'architettura p
     \item \textbf{Write Back}: Accesso in scrittura al register file per scrivere i risultati ottenuti;
 \end{itemize}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.25\textwidth]{img/MIPS_clock_split.png}
     \caption{Divisone temporale impulso di clock}
@@ -100,7 +100,7 @@ Il MIPS, pertanto, presenta vari casi di conflitto che richiedono delle ipotesi 
     \item \textbf{Concorrenza sui registri}: Potenzialmente sul register file possono verificarsi dei conflitti, in particolare quando contemporaneamente un'istruzione vi accede in lettura e una in scrittura. Per risolvere il conflitto, le operazioni di lettura e scrittura vengono effettuate in due intervalli separati dello stesso ciclo di clock, e in particolare la fase di decode (lettura) opera nella seconda parte del ciclo di clock, mentre la fase di write back (scrittura) opera nella prima parte, come riportato in figura \ref{img:MIPS_divisione_clock};
 \end{itemize}
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.75\textwidth]{img/MIPS_architettura_pipeline.png}
     \caption{Architettura della pipeline MIPS}
@@ -178,7 +178,7 @@ for (int i = 0; i < N; i++){
 Tali for prevedono un controllo iniziale sulla variabile. Vedendo come sono strutturati tale controllo prevede l'esecuzione del ramo else una sola volta (guardando il for interno) ogni N passi.
 I modi pre prevedere il branch possono essere vari, e possono essere descritti mediante degli appositi automi a stati finiti. Un primo approccio molto basilare è quello di andare a cambiare il branch da caricare successivamente ad ogni errore di decisione e quindi eseguire le operazioni descritte dall'automa [\ref{img:automa-semplice}].
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=.5\textwidth]{img/automa-semplice.png}
     \caption{Automa della branch prediction base}\label{img:automa-semplice}
@@ -186,7 +186,7 @@ I modi pre prevedere il branch possono essere vari, e possono essere descritti m
 
 Tale soluzione, però, guardando al nostro caso, non è proprio ottimale, poichè per quel singolo fail che avviene ad ogni N interazioni dovrò assorbirmi 2 fault. Per evitare tale condizione, e quindi rendere la persistenza più forte, vado a costruire un automa a 4 stati che mi permette di rendere la condizione di "cambio del branch" più solida, poichè solo in caso di due fault successivi (fault = errore nel riconoscere il branch giusto), allora cambio il mio branch effettivo. L'automa che meglio spiega tale principio è quello visualizzabille all'immagine [\ref{img:automa-complesso}]
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=.5\textwidth]{img/automa-complesso.png}
     \caption{Automa della branch prediction avanzato}\label{img:automa-complesso}
@@ -203,7 +203,7 @@ La tabella viene aggiornata in parallelo durante la fase di Execute (EX), ovvero
 \\
 \\
 Cerchiamo di capire come sia possibile realizzare una memoria dalle caratteristiche descritte in precedenza. Osserviamo innanzitutto che un tale funzionamento non può essere ottenuto da un classico schema di MUX e DEMUX, in quanto l'ingresso della memoria sarà una chiave (indirizzo 100) e l'uscita sarà un valore (indirizzo 104 o 104). Per cui, la memoria si compone di una serie di chiavi, a ognuna delle quali viene associata un'informazione. \MakeUppercase{è} inoltre presente un comparatore legato a ciascuna chiave, che restituisce un valore alto se questa coincide con il valore della chiave fornito in ingresso. Tutte le informazioni memorizzate sono collegate a un MUX, che viene pilotato dalle uscite dei comparatori. Una tale tipologia di memoria è detta \textbf{associativa} [\ref{fig:mem_associativa}], e differisce dalle classiche memorie indirizzabili quali, RAM o hard disk.
-\begin{figure}[!h]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.5\linewidth]{img/mem_associativa.png}
     \caption{Architettura di una memoria associativa.}
@@ -230,14 +230,14 @@ La linea guida generale seguita dai processori con Pipeline è che la pipe non d
 \\
 \\
 In tal caso, è possibile adottare un'altra tecnica nota come \textbf{Internal Fowarding}, che consiste nell'ibernare temporaneamente le istruzioni bloccate (ad esempio in attesa di dati dalla memoria), sospendendo la loro esecuzione. Nel frattempo, la pipeline può continuare con le istruzioni successive. Quando l'operazione bloccata è pronta per essere completata, viene ripresa nel corretto ordine. In questa soluzione quindi, le istruzioni vengono prelevate in sequenza ma non eseguite necessariamente in sequenza. Notiamo come questo comportamento viola il modello sequenziale di Von Neumann, in cui le istruzioni dovrebbero essere eseguite nell'ordine in cui sono scritte. Un problema importante che può emergere in questo contesto è la condivisione di registri tra istruzioni diverse. Cosa succede se più istruzioni accedono allo stesso registro? Se una lo modifica mentre un'altra lo sta ancora usando, si crea un conflitto sui dati, chiamato anche \textbf{Hazard}.  Una soluzione possibile è quella di creare più copie del registro coinvolto, in modo da tenere traccia dei diversi stati dello stesso dato nel tempo. Questo può essere implementato tramite una forma di indirizzamento indiretto: ogni registro ha uno o più puntatori che indicano sezioni di memoria dedicate a contenere le vecchie versioni del registro stesso [\ref{fig:reg_copia}]. Per funzionare correttamente, è necessario che il numero di registri fisici (cioè le copie disponibili) sia maggiore rispetto ai registri logici visibili al programmatore, in modo da evitare conflitti durante l'esecuzione in parallelo delle istruzioni.
-\begin{figure}[!h]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.4\linewidth]{img/registri_copia1.png}
     \caption{Struttura dei registri copia con indirizzamento indiretto.}
     \label{fig:reg_copia}
 \end{figure}
 Per implementare questa tecnica si utilizza un'area di memoria interna al processore detta \textbf{tabella di ibernazione}, che tiene nota di tutte quelle istruzioni già decodificate, ovvero di cui si ha già la chiara conoscenza degli operandi e delle operazioni che queste richiedono [\ref{fig:tabella_ibern}]. 
-\begin{figure}[!h]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.5\linewidth]{img/tabella_ibernazione.png}
     \caption{Tabella di ibernazione.}
@@ -248,7 +248,7 @@ Se per un determinato tipo, è necessario ibernare più istruzioni di quanto la 
     \item Il numero di operazioni sospese che dipendono da esso.
     \item Un bit di validità, per indicare se il valore è valido (0) o meno (1). 
 \end{enumerate}
-\begin{figure}[!h]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.4\linewidth]{img/registri_if.png}
     \caption{Struttura dei registri.}
@@ -308,7 +308,7 @@ L'utilizzo delle pipe porta dei vantaggi non in termini di attraversamento di un
 \subsection{Gestione delle Collisioni}
 La \textbf{gestione delle collisioni} nella architetture superscalari avviene completamente in hardware. Per comprendere al meglio come un processore con una tale architettura gestisca il problema, introduciamo un esempio. Supponiamo che la CPU sia in grado di realizzare addizione e moltiplicazione in floating point. Come possiamo immaginare, alcune delle operazioni presenti nell'addizione potrebbero essere richieste anche dalla moltiplicazione (e viceversa), mappiamo dunque all'interno di una tabella le diverse operazioni necessarie a completare le due [\ref{tab:mul} e \ref{tab:add}].
 
-\begin{table}[!h]
+\begin{table}[ht]
 \centering
 \begin{tabular}{|l|c|c|c|c|c|c|c|}
 \hline
@@ -335,7 +335,7 @@ Shift B  &   &   &   &   &   &   &   \\
 \label{tab:mul}
 \end{table}
 
-\begin{table}[!h]
+\begin{table}[ht]
 \centering
 \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
 \hline
@@ -364,7 +364,7 @@ Shift B  &   &   &   &   &   & X & X &   &   \\
 
 L'introduzione di tali tabelle semplifica notevolmente la scrittura del \textbf{vettore delle collisioni}, ovvero un particolare vettore binario utilizzato dal compilatore per gestire il problema dei conflitti tra pipe. Poniamoci nell'ipotesi semplificativa di due sole pipe, in modo da visualizzare pù facilmente il processo. Per ricavare il vettore, è sufficiente sovrapporre le tabelle delle operazioni che vogliamo eseguire, opportunamente shiftate a seconda di quale delle due sia eseguita prima. Ad esempio, se vogliamo eseguire una moltiplicazione X e al ciclo di clock successivo un'altra moltiplicazione Y, la sovrapposizione delle tabelle fornisce il seguente risultato [\ref{tab:collision}].
 
-\begin{table}[!h]
+\begin{table}[ht]
 \centering
 \begin{tabular}{|l|c|c|c|c|c|c|c|}
 \hline
@@ -397,7 +397,7 @@ La tabella evidenzia come le due operazioni, eseguite secondo la tempificazione 
 \\
 \\
 Ritorniamo all'esempio e cerchiamo di capire come il compilatore gestisca le collisioni per una generica sequenza di operazioni, che supponiamo essere: \textit{add, mul, mul}. \MakeUppercase{è} innanzitutto necessario costruire il vettore di collisione per le operazioni \textit{add-mul} e \textit{mul-mul}. A questo punto, bisogna inserire la seconda moltiplicazione tenendo conto sia della moltiplicazione precedente che della prima addizione. Tale condizione viene completamente gestita in hardware, secondo una struttura fatta nel seguente modo [\ref{fig:hardware-coll}].
-\begin{figure}[!h]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.7\linewidth]{img/superscalari_collisioni.png}
     \caption{Hardware per la gestione delle collisioni.}

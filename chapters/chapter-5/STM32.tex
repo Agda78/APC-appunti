@@ -46,7 +46,7 @@ Due \textbf{ISR} sono principalmente coinvolte nel processo di trasmissione:
 Queste interruzioni vengono attivate mediante la scrittura dei registri interni della CU \textit{TXEIE} e \textit{TCE}.
 Presentiamo la funzione che serve a trasmettere dati via UART in modalità interrupt \textit{IT} non bloccante. 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
 HAL_StatusTypeDef HAL_UART_Transmit_IT(UART_HandleTypeDef *huart, const uint8_t *pData, uint16_t Size){
   if (huart->gState == HAL_UART_STATE_READY){
    	huart->pTxBuffPtr  = pData; // Copia buffer e dimensione del buffer.
@@ -111,7 +111,7 @@ Usando LDREX e STREX al posto delle normali istruzioni di LOAD e STORE, risolvia
 Questo meccanismo non causa deadlock, infatti il main riuscirà a scrivere al secondo tentativo, mentre la ISR riuscirà al primo. 
 Questa funzionalità viene realizzata dalla primitiva ATOMIC\_SET\_BIT(REG,BIT):
 
-\begin{lstlisting}
+\begin{lstlisting}[language=C]
     #define ATOMIC_SET_BIT(REG, BIT)
     do{
         uint32_t val;
@@ -125,7 +125,7 @@ Osserviamo che do{...}while(0) è una tecnica tipica della definizione di funzio
 
 
 \subsection{DMA}
-Nell'interfaccia grafica di CUBE Pinout e configuration, è possibile selezionare nell'interfaccia Connectivity le impostazioni delle varie periferiche.
+Nell'interfaccia grafica di CUBE \textit{Pinout \& configuration}, è possibile selezionare nell'interfaccia Connectivity le impostazioni delle varie periferiche.
 Nelle impostazioni della UART, è possibile configurare le impostazioni del DMA. 
 Cliccando su \textit{Request}, si può configurare il DMA il ricezione o trasmissione. Il SoC ha diversi tipi di DMA, e ogni periferica può accedere ad un determinato DMA di uno specifico tipo, non tutto è connesso a tutto. In fase di configurazione si imposta a quale DMA la periferica può accedere e in che modalità. 
 L'HAL della UART offre delle funzioni per la ricezione e la trasmissione mediante DMA. Consultare l'HAL descriptor nella documentazione per ulteriori informazioni. 

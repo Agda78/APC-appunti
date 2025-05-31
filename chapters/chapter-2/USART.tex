@@ -54,7 +54,7 @@ Tra questi errori l'unico su cui si può attuare un miglioramento è quello di o
 L'Intel 8251A è un dispositivo programmabile che permette la comunicazione tra la CPU e una qualunque periferica seriale che utilizza lo standard RS-232. Tale dispositivo riceve i dati da trasmettere in maniera parallela dalla CPU, per poi inviarli in maniera seriale attraverso l'utilizzo del protocollo selezionato in una prima fase di configurazione (per questo programmabile). 
 La sua struttura principale è quella visualizzabile nella figura [\ref{img:Intel-8251A}]
 
-\begin{figure}
+\begin{figure}[ht]
     \centering
     \includegraphics[width=.5\textwidth]{img/Intel8251A.png}
     \caption{Struttura dell'Intel 8251A}\label{img:Intel-8251A}
@@ -102,7 +102,7 @@ In tale struttura logica notiamo vari blocchi differenti, ovvero:
 \subsubsection{Intel-8251A in Asim}
 Come detto in precedenza, l'Intel 8251A è un dispositivo programmabile, quindi richiede di una prima fase di configurazione (tramite il suo registro di modo) e poi il suo utilizzo tramite gli altri registri dell'interfaccia. Nel caso di ASIM il modello di programmazione utilizzato è quello visualizzabile alla figura [\ref{img:prog-8251A}]
 
-\begin{figure}
+\begin{figure}[ht]
     \centering
     \includegraphics[width=.5\textwidth]{img/prog-8251A.png}
     \caption{Modello di programmazione dell'8251A simulato}\label{img:prog-8251A}
@@ -121,13 +121,13 @@ I registri con cui ci si va ad interfacciare con il motorola 68K sono:
 
 Per accedere a tali registri di gestione del dispositivo si fa riferimento all'indirizzo dispari messo a disposizione all'interno del file di configurazione. In generale, tali registri, non hanno ognuno il suo puntatore, ma condividono lo stesso indirizzo, che, in base alla tipologia di funzionamento e di impostazione ne permette l'accesso. Precisamente, ogni volta che si fa un accesso in scrittura all'indirizzo dispari si segue l'ordine che è mostrato all'interno dell'immagine [\ref{img:accesso-registri}].
 
-\begin{figure}
+\begin{figure}[ht]
     \centering
     \includegraphics[width=.5\textwidth]{img/registri-8251A.png}
     \caption{Ordine di accesso all'indirizzo dispari}\label{img:accesso-registri}
 \end{figure}
 Tali però non sono gli unici registri presenti, poichè sono presenti anche i registri di dato (uno per l'ingresso ed uno per l'uscita) ed il registro di stato, per accedere a tali registri si accede, per il registro di stato, in lettura all'indirizzo dispari, mentre per gli indirizzi di dato si accede, in scrittura all'indirizzo pari per il registro d'uscita (DATAOUT), mentre si accede in lettura al registro pari per l'accesso per il registro di ingresso (DATAIN). Di seguito vi sono le tabelle che presentano la struttura dei registri di gestione (Modo, controllo e stato) [\ref{tab:MODE-8251},\ref{tab:CNTRL-8251},\ref{tab:STAT-8251}] e le modalità di accesso ai differenti registri [\ref{tab:accessi}]
-\begin{table}[h]
+\begin{table}[ht]
     \centering
     \begin{tabular}{|c|c|l|}
     \hline
@@ -142,7 +142,7 @@ Tali però non sono gli unici registri presenti, poichè sono presenti anche i r
     \caption{Accessi ai registri in base all'indirizzo e tipo}\label{tab:accessi}
 \end{table}
     
-\begin{table}[h]
+\begin{table}[ht]
     \centering
     \begin{tabular}{|c|p{11cm}|}
     \hline
@@ -160,7 +160,7 @@ Tali però non sono gli unici registri presenti, poichè sono presenti anche i r
     \caption{Significato dei bit del registro MODE}\label{tab:MODE-8251}
 \end{table}
     
-\begin{table}[h]
+\begin{table}[ht]
     \centering
     \begin{tabular}{|c|p{11cm}|}
     \hline
@@ -179,7 +179,7 @@ Tali però non sono gli unici registri presenti, poichè sono presenti anche i r
     \caption{Significato dei bit del registro CNTRL}\label{tab:CNTRL-8251}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[ht]
     \centering
     \begin{tabular}{|c|p{11cm}|}
     \hline
