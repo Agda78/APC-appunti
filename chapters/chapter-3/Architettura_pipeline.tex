@@ -71,79 +71,7 @@ Le principali problematiche che bisogna affrontare all'interno di un architettur
     \item \textbf{Gestione delle pipe multiple}: ho molteplici pipe di esecuzione, che quindi richiede una loro gestione per prevenire eventuali conflitti;
 \end{itemize}
 
-Una delle problematiche che maggiormente incide è quella riguardante il salto, poichè, dato che non conosco quale sia l'istruzione successiva, vado a bloccare la pipe appena noto che ho un'istruzione di salto, ed appena è verificata la condizione, vado a prelevare tale istruzione dalla memoria. Però questa soluzione risulta molto inefficiente, poichè introduce dei periodi in cui la pipe rimane in stallo. Difatti, una soluzione che è stata trovata è quella della branch prediction, per cui vado a processare le istruzioni successive, cercando di prevedere quale sarà il branch da eseguire, solo nel caso in cui mi accorgo che sto sbagliando vado ad effettuare il blocco della pipe, altrimenti continuo con la normale esecuzione del programma.
-
-\subsection{Architettura del MIPS}
-Il MIPS (Microprocessor without Interlocked Pipelined Stages) è una tipologia di architettura Pipelined di tipo RISC.
-Nel precedente capitolo abbiamo visto le fasi di esecuzione di un'architettura pipelined generale [\ref{img:pipe}], però, nel caso del MIPS, tali fasi variano leggermente. Difatti il MIPS è caratterizzato dalle seguenti fasi:
-\begin{itemize}
-    \item \textbf{Istruction Fetch}: Prelievo dell'istruzione dalla memoria e incremento del program counter;
-    \item \textbf{Decode}: Si vanno a prelevare gli operandi dal \textit{register file} e si preparano i segnali di controllo per la fase di esecuzione. Il register file è una componente fondamentale all'interno di un processore. Si tratta di un insieme organizzato di registri che servono per archiviare temporaneamente dati e istruzioni durante l'esecuzione dei programmi. Supporta operazioni di lettura e scrittura simultanee, infatti il processore può leggere/scrivere da/verso più registri nello stesso ciclo di clock;
-    \item \textbf{Execute}: Esecuzione delle operazioni logico-aritmetiche pilotate dai segnali della fase di decode precedente;
-    \item \textbf{Memory}: Vado a leggere o scrivere qualcosa dalla memoria e gestione dei salti;
-    \item \textbf{Write Back}: Accesso in scrittura al register file per scrivere i risultati ottenuti;
-\end{itemize}
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.25\textwidth]{img/MIPS_clock_split.png}
-    \caption{Divisone temporale impulso di clock}
-    \label{img:MIPS_divisione_clock}
-\end{figure}
-
-Come per tutte le architettura pipelined, anche il MIPS richiede che tra le varie fasi vi siano dei registri che conservino lo stato dell'operazione.
-Il MIPS, pertanto, presenta vari casi di conflitto che richiedono delle ipotesi sul sistema stesso. Tali ipotesi sono:
-
-\begin{itemize}
-    \item \textbf{Velocità della memoria}: La memoria che sarà utilizzata dal MIPS sarà acceduta molto frequentemente (precisamente 5 volte in più rispetto al caso senza pipe);
-    \item \textbf{Concorrenze sulla memoria}: Presenza di due memorie, una per le istruzioni ed una per i dati. Tali memorie vengono previste per evitare la concorrenza tra la fase di fetch (prelievo dell'istruzione dalla memoria) e la fase di MEM (lettura o scrittura dalla memoria);
-    \item \textbf{Concorrenza sui registri}: Potenzialmente sul register file possono verificarsi dei conflitti, in particolare quando contemporaneamente un'istruzione vi accede in lettura e una in scrittura. Per risolvere il conflitto, le operazioni di lettura e scrittura vengono effettuate in due intervalli separati dello stesso ciclo di clock, e in particolare la fase di decode (lettura) opera nella seconda parte del ciclo di clock, mentre la fase di write back (scrittura) opera nella prima parte, come riportato in figura \ref{img:MIPS_divisione_clock};
-\end{itemize}
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.75\textwidth]{img/MIPS_architettura_pipeline.png}
-    \caption{Architettura della pipeline MIPS}
-    \label{img:MIPS_architettura_pipeline}
-\end{figure}
-
-\paragraph{Fase di Fetch}
-La fase di fetch è caratterizzata da 2 principali operazioni, la fase di prelievo dell'indirizzo e la fase di incremento del program counter. 
-L'istruzione viene letta dalla Instruction memory, indirizzata al PC e posta nel registro di comunicazione tra fase IF e fase ID. Dopodichè, il PC viene incrementato e copiato nel registro di comunicazione, perchè potrebbe, nel caso di istruzioni di salto, servire a fasi successive.
-Pertanto la sua parte architetturale è formata dalle componenti:
-\begin{itemize}
-    \item \textbf{ADD}: Al fine di favorire l'indipendenza dell'incremento del PC (operazione che avviene con la massima frequenza), l'operazione viene effettuata da un circuito dedicato, in modo da calcolare il prossimo indirizzo del PC senza interferire con altre operazioni dell'ALU principale, in modo da prevenire conflitti sulla pipe;
-    \item \textbf{MUX}: Seleziona se considerare l'indirizzo di memoria successivo del program counter o un registro di memoria dettato dalla fase di MEM (caso di istruzioni di salto);
-    \item \textbf{PC}: Registro program counter;
-    \item \textbf{Istruction Memory}: Prelievo dell'istruzione da eseguire dalla memoria;
-\end{itemize}
-
-\paragraph{Fase di Decode}
-Nella fase di Decode, il MIPS, va a decodificare ed interpretare il comando. In particolare, vengono letti gli eventuali registri sorgente (nel caso di indirizzamento Register o Immediato) dal register file e memorizzati nel registro di comunicazione ID/EX. Nel caso di istruzioni con indirizzamento Immediato, i 16 bit del valore vengono convertiti in un valore a 32 bit estendendo il segno, e il valore così esteso viene inserito nel registro di comunicazione. Inoltre, il valore del PC precedentemente passato dalla fase di IF, viene propagato insieme alle altre informazioni al registro di comunicazione successivo. Osserviamo che il numero di registro destinazione in cui memorizzare un dato nella fase WB deve essere propagato lungo tutta la pipeline.
-Le parti che compongono l'architettura della fase di decode dunque sono:
-\begin{itemize}
-    \item \textbf{Registers}: Registri interni del processore che possono essere pilotati sia in lettura che in scrittura tramite dei segnali esterni (contenuti nella sotto-architettura);
-    \item \textbf{Sign-extend}: Blocco di estensione con segno dei possibili valori immediati contenuti nell'istruzione;
-\end{itemize}
-
-Il blocco estensione del segno è fondamentale perchè l'architettura MIPS utilizza istruzioni di lunghezza fissa di 32 bit per semplificare il design del processore e migliorare la velocità di decodifica, e dunque la codifica dei valori acceduti con indirizzamento immediato è fissata a 16 bit. L'estensione a 32 bit è necessaria perchè garantisce che il valore immediato possa essere direttamente utilizzato per le operazioni aritmetiche o logiche con i registri (che sono anch'essi a 32 bit).
-
-\paragraph{Fase di Execute}
-Nella fase Execute viene eseguita effettivamente l'istruzione. In particolare, vengono prelevati i dati e i bit di controllo dal registro ID/EX e vengono effettuate le oeprazioni logico-aritmetiche dalla ALU, e i risultati vengono memorizzati nel registro di comunicazione EX/MEM. In caso di istruzioni di salto, viene presa la decisione di saltare o meno, e viene calcolato il nuovo valore di PC, che viene inserito nel registro di comunicazione EX/MEM. In caso di istruzioni load/store, viene calcolato l'indirizzo dell'operando in memoria e posto in EX/MEM. 
-La parte architetturale è composta da vari componenti interessanti.
-\begin{itemize}
-    \item \textbf{Add}: Strumento che viene utilizzato per calcolare un eventuale offset rispetto ad un valore, e viene utilizzato per calcolare il nuovo valore del PC in caso di salti condizionati o incondizionati;
-    \item \textbf{Shift left 2}: Moltiplica per 4 il valore per cui voglio saltare (in modo da saltare a 4 indirizzi più avanti);
-    \item \textbf{ALU}: Strumento di calcolo aritmetico-logico;
-    \item \textbf{Multiplexer}: Seleziona o il dato immediato o un secondo dato proveniente da un registro, proveniente dalla fase precedente;
-\end{itemize}
-
-\paragraph{Fase di Mem}
-Nella fase di memorizzazione avviene l'accesso alla memoria dati, secondo l'indirizzo comunicato dalla fase precedente nel registro EX/MEM. In caso di istruzione di LOAD, il dato viene letto e propagato nel registro MEM/WB. 
-La sua architettura è composta principalmente dal singolo elemento di accesso alla memoria dati.
-
-\paragraph{Fase di Write Back}
-In tale fase vado a verificare cosa bisogna scrivere all'interno dei registri interni. Il componente che meglio indica il suo funzionamento è il multiplexer finale che serve per specificare se il dato da caricare all'interno dei registri sia il risultato dell'ALU o qualche valore proveniente dalla memoria dati. 
+Una delle problematiche che maggiormente incide è quella riguardante il salto, poichè, dato che non conosco quale sia l'istruzione successiva, vado a bloccare la pipe appena noto che ho un'istruzione di salto, ed appena è verificata la condizione, vado a prelevare tale istruzione dalla memoria. Però questa soluzione risulta molto inefficiente, poichè introduce dei periodi in cui la pipe rimane in stallo. Difatti, una soluzione che è stata trovata è quella della branch prediction, per cui vado a processare le istruzioni successive, cercando di prevedere quale sarà il branch da eseguire, solo nel caso in cui mi accorgo che sto sbagliando vado ad effettuare il blocco della pipe, altrimenti continuo con la normale esecuzione del programma. 
 
 \subsection{Registri Intermedi}
 I registri che sono posti tra una fase e l'altra della pipeline sono molto più complessi di quel che si crede. Essi non contengono solo dati informativi (operandi e risultati), ma contengono anche: traccia dell'operazione da effetture, destinazione del risultato ecc. 
@@ -289,14 +217,13 @@ comportamento del sistema, in queste condizioni, sia quello di Von Neumann, occo
         \item In quello \textit{ottimistico}, il processore prosegue comunque e, in caso di errore, effettua un \textbf{roll-back} (ripristino dello stato precedente). Questo richiede però di salvare lo stato del sistema.
     \end{enumerate}
 \end{itemize}
-Concentriamoci sulla seconda soluzione e introduciamo le due principali tecniche che permettono di implementare il roll-back.
 \begin{enumerate}
-    \item La tecnica del \textbf{Check Point} consiste nel salvare periodicamente lo stato del processore (sia registri che Program Counter) in una memoria dedicata. In caso di eccezione, si ripristina l’ultimo stato salvato e si riprende l'esecuzione in modo sequenziale da lì. Il problema nasce nella gestione della memoria in presenza di istruzioni che ne alterano il contenuto e che non si sarebbero dovute eseguire perché successive all'istruzione che ha generato l'eccezione.
-    La principale difficoltà sta nello scegliere ogni quanto salvare i checkpoint: effettuandoli troppo spesso si rischia il sovraccarico, mentre effettuandoli troppo raramente il lavoro da fare in caso di errore aumenta.
-    \item La tecnica dell'\textbf{History Buffer}, invece, utilizza un area di memoria (buffer) in cui conserva ogni istruzione eseguita insieme ai valori originali dei registri (o operandi) che modifica. Le istruzioni rimangono nel buffer finché non è certo che tutte le precedenti sono andate a buon fine (cioè non hanno generato eccezioni). Se un’eccezione si verifica, il sistema può eseguire un'operazione di UNDO per annullare gli effetti di tutte le istruzioni successive a quella che ha causato l'errore. Anche in questo caso, per garantire un’interruzione precisa, è necessario procedere in modo sequenziale durante il recupero. Il buffer utilizzato deve essere grande quanto il numero di istruzioni che possono generare contemporaneamente interruzioni. Inoltre, la gestione History Buffer non costa nulla in assenza di interruzioni, questo perché le opreazioni di memorizzazione del "vecchio stato" avvengono in parallelo alle normali operazioni del processore. Dunque, il tutto è implementato in hardware.
+    \item La tecnica del \textbf{Check Point} consiste nel salvare periodicamente lo stato del processore (inclusi registri e Program Counter) in una memoria dedicata. In caso di eccezione o interruzione, si può ripristinare l’ultimo stato salvato e riprendere l’esecuzione in modo sequenziale da lì. Un aspetto critico è la gestione della memoria, poiché alcune istruzioni eseguite dopo il checkpoint potrebbero aver alterato dati che non avrebbero dovuto essere modificati. Questo richiede eventualmente meccanismi aggiuntivi per annullare anche le scritture in memoria. Inoltre, è importante scegliere con attenzione quando effettuare i salvataggi: se troppo frequenti, possono introdurre un sovraccarico in termini di tempo e spazio; se troppo distanti, in caso di eccezione si deve ripetere un ampio numero di istruzioni.
+    \item La tecnica dell’\textbf{History Buffer} prevede l’uso di un buffer hardware che conserva, per ogni istruzione eseguita, i valori originali dei registri o delle locazioni di memoria che essa modifica. Questo permette di annullare gli effetti di istruzioni che non dovrebbero essere state eseguite, tramite un'operazione di \textit{undo}. Le informazioni salvate nel buffer restano disponibili fino a quando non è certo che tutte le istruzioni precedenti sono state eseguite correttamente (cioè non hanno generato eccezioni). In caso di eccezione, il sistema può ripristinare lo stato precedente annullando, in ordine inverso, tutte le modifiche fatte dalle istruzioni speculative o successive a quella che ha causato l’errore. Il buffer deve essere sufficientemente grande da contenere le modifiche delle istruzioni speculative che si trovano in esecuzione simultanea nella pipeline. Questa tecnica ha il vantaggio di non introdurre overhead in assenza di errori, poiché la memorizzazione dello stato precedente avviene in parallelo all’esecuzione normale del processore. È per questo motivo che la tecnica dell’History Buffer viene implementata completamente in hardware.
 \end{enumerate}
+Notiamo come in entrambe le tecniche, a seguito di eventuali eccezioni, l'esecuzione si riprende \textit{sequenzialmente} dal punto di interruzione. Con ciò si intende che l’esecuzione deve proseguire in ordine corretto delle istruzioni del programma, come se l’errore non fosse mai avvenuto.
 
-In un approccio basato sul roll-back è fondamentale essere conservativi sulla scrittura in memoria, ovvero bisogna fare attenzione a non scrivere (fase WB) troppo presto. Se lo si fa e poi si scopre che un'istruzione successiva ha generato un'eccezione, la scrittura sarebbe già avvenuta e non potremmo più tornare indietro in modo pulito.
+In un approccio basato sul roll-back è fondamentale essere conservativi sulla scrittura in memoria, ovvero bisogna fare attenzione a non scrivere (fase WB) troppo presto. Se lo si fa e poi si scopre che un'istruzione successiva ha generato un'eccezione, la scrittura sarebbe già avvenuta e non potremmo più tornare indietro in modo pulito. In altre parole, dopo aver ripristinato lo stato corretto (tramite checkpoint o undo), non si può ripartire da uno stato speculativo o da metà pipeline, ma bisogna ricominciare l’esecuzione delle istruzioni in ordine, partendo dal Program Counter corretto.
 
 \section{Architetture Superscalari}
 L'utilizzo delle pipe porta dei vantaggi non in termini di attraversamento di una istruzione, che rimane invariato, ma in termini di produttività. Per ottenere prestazioni ancora migliori, è possibile realizzare un'architettura con più pipe che eseguono diverse istruzioni in parallelo, così da aumentare la produttività del sistema. Una tale architettura viene chiamata \textbf{Superscalare}. Tuttavia, questa introduce delle problematiche che vanno necessariamente risolte, queste sono:
@@ -390,20 +317,23 @@ Shift B  &   &   &   &   &   &   &   \\
 \caption{Collisioni tra due moltiplicazioni sfasate di 1 ciclo di clock.}
 \label{tab:collision}
 \end{table}
-La tabella evidenzia come le due operazioni, eseguite secondo la tempificazione descritta, presentano delle collisioni al tempo 3 e 4 (presenza contemporanea di X e Y). Il corrispondente vettore delle collisioni sarà dunque 0011000. \MakeUppercase{è} fondamentale ribadire che il vettore si limita solamente a segnalare la presenza di una collisione (1 nella stringa), ma ciò non ha niente a che vedere con le fasi della pipeline. In altre parole, se nella stringa c'è un 1 nella terza posizione, questo NON significa che la collisione riguarda la terza fase.
+La tabella evidenzia come le due operazioni, eseguite secondo la tempificazione descritta, presentano delle collisioni al tempo 3 e 4 (presenza contemporanea di X e Y). Ripetendo la sovrapposizione appena mostrata per diverse tempificazioni (dopo 2 cicli, dopo 3 cicli, eccetera), è possibile giungere al corrispondente vettore delle collisioni: 110000. \MakeUppercase{è} fondamentale ribadire che il vettore si limita solamente a segnalare la presenza di una collisione (1 nella stringa) nel caso in cui le operazioni venissero eseguite con quella tempificazione, ma ciò non ha niente a che vedere con le fasi della pipeline. In altre parole, se nella stringa c'è un 1 nella seconda posizione, questo NON significa che la collisione riguarda la fase di decodifica. 
 \\
 \\
-\MakeUppercase{è} da notare come in tal caso non valga la proprietà commutativa, realizzando infatti prima una moltiplicazione e poi un'addizione non ci sarebbe alcune collisione. Nel nostro esempio ci siamo fermati a realizzare il collision vector per 1 solo caso, ovvero quello in cui una moltiplicazione segue una moltiplicazione. In generale, è necessario costruirlo per tutte le possibili combinazioni di operazioni (\textit{mul} segue \textit{add}, \textit{add} segue \textit{add}, eccetera). Se per ipotesi avessimo \(n\) istruzioni da realizzare, sarebbe necessario costruire \(2^n\) vettori, complicando notevolmente il lavoro del compilatore.
+\MakeUppercase{è} da notare come in tal caso non valga la proprietà commutativa, realizzando infatti prima una moltiplicazione e poi un'addizione non ci sarebbe alcuna collisione. Nel nostro esempio ci siamo fermati a realizzare il collision vector per 1 solo caso, ovvero quello in cui una moltiplicazione segue una moltiplicazione. In generale, è necessario costruirlo per tutte le possibili combinazioni di operazioni (\textit{mul} segue \textit{add}, \textit{add} segue \textit{add}, eccetera). Se per ipotesi avessimo \(n\) istruzioni da realizzare, sarebbe necessario costruire \(2^n\) vettori, complicando notevolmente il lavoro del compilatore.
 \\
 \\
-Ritorniamo all'esempio e cerchiamo di capire come il compilatore gestisca le collisioni per una generica sequenza di operazioni, che supponiamo essere: \textit{add, mul, mul}. \MakeUppercase{è} innanzitutto necessario costruire il vettore di collisione per le operazioni \textit{add-mul} e \textit{mul-mul}. A questo punto, bisogna inserire la seconda moltiplicazione tenendo conto sia della moltiplicazione precedente che della prima addizione. Tale condizione viene completamente gestita in hardware, secondo una struttura fatta nel seguente modo [\ref{fig:hardware-coll}].
-\begin{figure}[ht]
+Ritorniamo all'esempio e cerchiamo di capire come il compilatore gestisca le collisioni per una generica sequenza di operazioni, che supponiamo essere: \textit{add, mul, mul}. \MakeUppercase{è} innanzitutto necessario costruire il vettore di collisione per le operazioni \textit{add-mul} e \textit{mul-mul}. A questo punto, bisogna inserire la seconda moltiplicazione tenendo conto sia della moltiplicazione precedente che della prima addizione. In generale potrebbero presentarsi diverse combinazioni delle operazioni da eseguite, per cui la verifica dei conflitti tra pipe avviene tramite un \textbf{sistema di decisione} completamente realizzato in hardware, con una struttura fatta nel seguente modo [\ref{fig:super-collisioni}].
+\begin{figure}[!h]
     \centering
-    \includegraphics[width=0.7\linewidth]{img/superscalari_collisioni.png}
+    \includegraphics[width=0.65\linewidth]{img/superscalari_collisioni.png}
     \caption{Hardware per la gestione delle collisioni.}
-    \label{fig:hardware-coll}
+    \label{fig:super-collisioni}
 \end{figure}
-In particolare, il registro a scorrimento fa proseguire la "storia" delle istruzioni, mentre la OR "unisce" la storia precedente con la nuova. Quindi, la OR garantisce che non ci sia collisione né con l'istruzione che stiamo aggiungendo, né con la storia di istruzioni precedenti. \MakeUppercase{è} fondamentale notare come la struttura sia suddivisa in due parti, quella superiore che riguarda soltanto la moltiplicazione, e quella inferiore che invece riguarda l'addizione.
+In particolare, il registro a scorrimento fa proseguire la "storia" delle istruzioni, mentre la OR "unisce" la storia precedente con la nuova. Quindi, la OR garantisce che non ci sia collisione né con l'istruzione che stiamo aggiungendo, né con la storia di istruzioni precedenti. I segnali di \textit{multiply granted} e \textit{add granted}, indicano rispettivamente la possibilità di eseguire la moltiplicazione e l'addizione. I segnali \textit{grant multiply} e \textit{grant add}, invece, abilitano le rispettive operazioni quando assumono valore 0. Il motivo per cui tali segnali sono attivi sullo 0 è semplice, la OR mette in relazione la storia passata (presente nel registro a scorrimento) e l'operazione che vogliamo eseguire (descritta dal vettore delle collisioni), se la OR bit a bit tra i due non genera conflitti, allora il bit che esce dallo shift register è uno 0. \MakeUppercase{è} fondamentale notare come la struttura sia suddivisa in due parti, quella superiore che riguarda soltanto la moltiplicazione, e quella inferiore che invece riguarda l'addizione.
+\\
+\\
+C'è da osservare che i problemi relativi a una tale soluzione sopraggiungono in corrispondenza di istruzioni di salto. In tal caso, a seconda o meno della verifica della condizione di salto, bisogna arrestare non solo una pipe, ma molteplici e gestirne di conseguenza il riavvio. Considerando che i salti costituiscono circa il 25\% delle istruzioni, una semplice soluzione consiste nel dedicare una pipe specifica alla predizione dei salti. Questa predizione andrebbe elaborata il prima possibile, in modo da ridurre al minimo gli inconvenienti all'interno delle restanti pipe ed aumentare quindi l'efficienza complessiva del sistema.
 \\
 \\
 Un tale tipo di soluzione hardware per la gestione delle collisioni è tipica dei sistemi \textbf{DSP} (Digital Signal Processor), come quelli usati per audio, video, telecomunicazioni. In particolare, il suo utilizzo permette di schedulare le istruzioni nel modo più efficiente possibile evitando stalli o rallentamenti.
