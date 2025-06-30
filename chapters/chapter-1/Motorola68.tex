@@ -1,24 +1,53 @@
 \section{Motorola 68k}
-Una volta introdotti i concetti teorici e tecnologici propedeutici, si possono iniziare ad osservare i principali costrutti per la programmazione con il Motorola 68k.
+Una volta introdotti i concetti teorici e tecnologici propedeutici, si possono iniziare ad osservare i principali costrutti per la programmazione con il Motorola 68000.
 Conviene, quindi, non solo capire quali sono i  codici per le varie tipologie di istruzioni specificate nel paragrafo [\ref{par:istruzioni}], ma anche come costruire i principali componenti di un linguaggio di più alto livello (di cui si presuppone una minima conoscenza). I costrutti in questione possono essere: cicli, blocchi di decisione, ecc.
 
 \subsection{Registri General Purpose}
-I registri General-Purpose (o registri macchina) è l'insieme dei registri che sono messi a disposizione del programmatore per scrivere vari codici in accoppiata con gli specifici codici operativi.
-I registri a disposizione, nel caso del motorola 68k sono i seguenti:
+Con \textit{registri General-Purpose} (o registri macchina) intendiamo l'insieme dei registri messi a disposizione del programmatore per scrivere codice sfruttando i codici operativi dell'ISA.
+I registri General-Purpose a disposizione sono un insieme di registri a 32 bit:
 \begin{itemize}
-    \item \textbf{Registri Dato}: Registri D0,D1,\dots,D7
-    \item \textbf{Registri Indirizzo}: Registri A0,A1,\dots,A7 ed A7' (utilizzato nel caso di privilegi alti)
-    \item \textbf{Status Register (SR)}: Registro che contiene vari controlli sia sui risultati delle operazioni dell'ALU che sullo stato dell'esecuzioe (se in super-user o meno)
+    \item \textbf{Registri Dato}: Registri D0,D1,\dots,D7;
+    \item \textbf{Registri Indirizzo}: Registri A0,A1,\dots,A7 ed A7' (questi ultimi puntano alla cima dello STACK: A7' è accessibile solo in modalità \textit{supervisore}. In generale, ogni modalità di esecuzione dispone di un'area stack separata);
+    \item \textbf{Status Register (SR)}: Registro a 16 bit che contiene informazioni sia sui risultati delle operazioni dell'ALU che sullo stato dell'esecuzione (se in super-user o meno). Questo regsitro è sempre accessibile in lettura, mentre è accessibile in scrittura solo in modalità supervisore.
 \end{itemize}
 
-Tali registri sono fondamentali per l'esecuzione dei comandi come nel caso del 68k. Con tali registri saranno implementati tutti gli algoritmi utili nel resto del corso
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Bit} & \textbf{Sigla} & \textbf{Descrizione} \\
+\hline
+15 & T & Trace Enable \\
+\hline
+14 & S & Supervisor State (1=Supervisor) \\
+\hline
+13-8 & - & Non usati (riservati) \\
+\hline
+7 & X & Extend (Estensione del Carry) \\
+\hline
+6 & N & Negative \\
+\hline
+5 & Z & Zero \\
+\hline
+4 & V & Overflow \\
+\hline
+3 & C & Carry \\
+\hline
+2-0 & - & Non usati (riservati) \\
+\hline
+\end{tabular}
+\caption{Bit dello Status Register (SR) del Motorola 68k}
+\label{table:SR68k}
+\end{table}
+
 
 \subsection{Codici di Spostamento dati o indirizzi}
-Il principale comando che nel motorola 68k permette lo spostamento dei dati è la \lstinline|MOVE|, che può essere differentemente impostata in base ai seguenti parametri:
+Il principale codice operativo che nel motorola 68k permette lo spostamento dei dati è la \lstinline|MOVE|, che può essere differentemente utilizzata in base ai seguenti parametri:
 
 \begin{itemize}
-    \item \textbf{Lunghezza degli operandi}: solitamente specificata con delle lettere alla fine del comando
-    \item \textbf{Tipologia di indirizzamento}: La \lstinline|MOVE| è una tra le poche operazioni che ammette tutte le tipologie di indirizzamento possibili, l'unico che può portare degli errori è l'indirizzamento immediato per l'operando di destinazione, che di per se non ha senso
+    \item \textbf{Lunghezza degli operandi}: solitamente specificata con la \textit{dot notation} alla fine del comando;
+    \item \textbf{Tipologia di indirizzamento}: La \lstinline|MOVE| è una tra le poche operazioni che ammette tutte le tipologie di indirizzamento possibili (proprietà detta di \textbf{ortogonalità}); L'indirizzamento immediato per l'operando di destinazione è l'unico che può causa errore, ma è un'operazione che comunque non ha alcun senso.
 \end{itemize}
 
 La caratterizzazione del comando \lstinline|MOVE| è la seguente:
@@ -30,10 +59,10 @@ La caratterizzazione del comando \lstinline|MOVE| è la seguente:
     *D0 = (A0), D0 = contenuto del registro in posizione A0
     MOVE.W (A0),D0
 
-    *Indirizzamento Indiretto completo A1 = A0
-    MOVE.L (A0),(A1) (istruzione non valida)
+    *Indirizzamento Indiretto completo
+    MOVE.L (A0),(A1) *(istruzione non valida)
     *o
-    MOVEA.L (A0),A1 (istruzione valida)
+    MOVEA.L (A0),A1 *(istruzione valida)
     *Indirizzamento immediato + indirizzamento Diretto
     MOVE.L #14,D0
 
@@ -68,9 +97,11 @@ La caratterizzazione del comando \lstinline|MOVE| è la seguente:
     RTS   * Ritorna dall'ultima subroutine chiamata
 \end{lstlisting}
 
-Nota su MOVE.L D0, -(A7): il - nel "pushare" nello stack è dovuto al fatto che, per costruzione, lo stack "cresce" verso il basso, quindi quindi deve decrescere di 4 byte per ospitare quanto vi sto inserendo, ciò è così per costruzione ma è scollegato dal fatto che il 68k sia big endian).
+\textbf{Nota sull'indirizzamento indiretto completo}: Non è possibile utilizzare un'operazione del tipo \lstinline|MOVE (A0), (A1)| perchè il bus dati dell'architettura del MC68k non supporta simultaneamente operazioni di lettura e scrittura, dunque servono due cicli di bus distinti. Occorre utilizzare dei registri dato interni di appoggio.
 
-Nota su RTS: concettualmente, RTS equivale a MOVE.L (A7)+, PC perché il valore puntato da A7 è quello * in cima allo stack, in questo caso estraiamo quindi + (lo stack "sale"), in caso contrario avremmo avuto - (quando inseriamo nello stack)
+\textbf{Nota su} \lstinline|MOVE.L D0, -(A7)|: il pre-decremento nell'operazione di push nello stack è dovuto al fatto che, per costruzione, lo stack "cresce" verso il basso, quindi deve decrescere di 4 byte per ospitare quanto vi sto inserendo (quanto detto è scollegato dal fatto che il 68k sia big endian).
+
+\textbf{Nota su RTS}: come concetto, RTS equivale a MOVE.L (A7)+, PC perché il valore puntato da A7 è quello * in cima allo stack, in questo caso estraiamo quindi + (lo stack "sale"), in caso contrario avremmo avuto - (quando inseriamo nello stack).
 
 Nel codice precedente sono da notare le seguenti notazioni:
 \begin{itemize}
@@ -78,8 +109,6 @@ Nel codice precedente sono da notare le seguenti notazioni:
     \item \textbf{.L}: tale parte del comando permette di capire che sto lavorando con operandi lunghi 32 bit (o 4 Byte) esse sono denotate Long Word
     \item \textbf{\#14}: Vado ad identificare un valore immediato tramite il termine \#<valore>, che sarà convertito in binario dal compilatore e poi inserito all'interno del programma, quindi integrato all'interno della zona istruzioni della mia memoria
 \end{itemize}
-
-Come si può notare il comando \lstinline|MOVE| permette di poter utilizzare tutti i tipi di indicizzazione di memoria possibili
 
 \newpage
 
@@ -136,24 +165,24 @@ I codici aritmetici più importanti, ed in generale, più presenti all'interno d
 \end{lstlisting}
 
 Come si nota dalle varie implementazioni dei codici aritmetici, questi non possono utilizzare tipologie di indirizzamento indiretto. Pertanto, prima di effettuare le operazioni aritmetiche, gli operandi di input devono essere caricati nei registri interni ed il risultato sarà poi memorizzato in uno dei due registri impiegati (Come visibile nei commenti dei vari comandi).
-Inoltre, sia MULU e MULS che DIVU e DIVS lavorano implicitamente su 16 bit nel 68k, e non esistono cose del tipo MULU.B oppure MULU.L (idem per gli altri 3 codici operativi):
+Inoltre, sia MULU e MULS che DIVU e DIVS lavorano implicitamente su 16 bit nel 68k, e non esistono cose del tipo MULU.B oppure MULU.L (idem per gli altri 3 codici operativi).
 
 \subsection{Codici di salto} \label{par:salto}
 
 I codici di salto possono essere di 3 tipologie principali nel motorola 68k:
 \begin{itemize}
-    \item \textbf{Salti condizionati}: Quando viene incontrata l'istruzione di salto, questa effettua il salto (cambiamento del PC) in maniera immediata e senza la verifica di alcuna condizione
+    \item \textbf{Salti incondizionati}: Quando viene incontrata l'istruzione di salto, questa effettua il salto (cambiamento del PC) in maniera immediata e senza la verifica di alcuna condizione;
 
-    \item \textbf{Salti incondizionati}: I salti condizionati sono effettuati in base al verificarsi di una determinata condizione. Nel caso del motorola 68k la condizione è associata ai valori associati ai singoli bit dello Statur Register (SR)
+    \item \textbf{Salti condizionati}: I salti condizionati sono effettuati in base al verificarsi di una determinata condizione. Nel caso del motorola 68k la condizione è associata ai valori dei singoli bit dello Statur Register (SR);
 
-    \item \textbf{Salti a subrutine}: I salti a subroutine sono delle tipologie particolari di salto incondizionato, con l'unica differenza che l'indirizzo di memoria da cui si è saltati viene prima memorizzato nello stack e poi viene effettuato il salto. Tale operazione fa in modo che una volta eseguita la subroutine, il sistema possa ritornare al punto a cui si era fermato nel programma principale, senza che il programmatore debba gestire direttamente tale condizione
+    \item \textbf{Salti a subrutine}: I salti a subroutine sono delle tipologie particolari di salto incondizionato, con l'unica differenza che l'indirizzo di memoria da cui si è saltati viene prima memorizzato nello stack e poi viene effettuato il salto. Tale operazione fa in modo che una volta eseguita la subroutine, il sistema possa ritornare al punto a cui si era fermato nel programma principale, sollevando il programmatore dall'onere di gestire manualmente il salvataggio dell'indirizzo di ritorno.
 \end{itemize}
 
 In generale, quando si definisce un codice di salto, bisogna prevedere anche il suo operando, che dal lato del programmatore può essere di principalmente 2 tipi:
 \begin{itemize}
-    \item \textbf{Label}: dopo l'istruzione si fa riferimento ad una label all'interno del programma scritto che permette di evitare di andare a lavorare con indirizzi di memoria diretti (sarà il compilatore a configurarli ad-hoc)
+    \item \textbf{Label}: dopo l'istruzione si fa riferimento ad una label all'interno del programma scritto che permette di evitare di andare a lavorare con indirizzi di memoria diretti (sarà il compilatore a configurarli ad-hoc);
 
-    \item \textbf{Indirizzamento indiretto}: Tramite dei registri indirizzo si indica la locazione di memoria specifica a cui si vuole saltare
+    \item \textbf{Indirizzamento indiretto}: Tramite dei registri indirizzo si indica la locazione di memoria specifica a cui si vuole saltare;
 \end{itemize}
 
 \newpage
@@ -165,17 +194,10 @@ I salti non condizionati in motorola possono essere i seguenti:
     JMP (A0)       * Salto all'indirizzo contenuto in A0
 \end{lstlisting}
 
-Solitamente nelle varie applicazioni si preferisce utilizzare il comando BRA, poichè più semplice da ricordare in riferimento ai comandi di salto condizionato
+Solitamente nelle varie applicazioni si preferisce utilizzare il comando BRA, poichè più semplice da ricordare in riferimento ai comandi di salto condizionato.
 
 \subsubsection{Salti condizionati}
-I salti condizionati hanno una forma più o meno eguale in base a quello che si vuole fare. La loro forma nel caso del 68k è del tipo: Bcc. Dove la B sta per BRANCH mentre "cc" sono le componenti che permettono di distinguere la condizione da considerare rispetto ai valori dello SR. In particolare, i salti condizionati operano in base ai valori dei 5 bit del \textbf{CCR (Condition Code Register)}, che sono i 5 bit meno significativi dello SR, ed, in particolare, sono:
-\begin{lstlisting}
-    0 - C - Carry (riporto / overflow logico)
-    1 - V - Overflow aritmetico
-    2 - Z - Risultato uguale a 0
-    3 - N - Risultato negativo
-    4 - X - Extend (per operazioni multiple)
-\end{lstlisting}
+I salti condizionati hanno una forma più o meno uguale in base a quello che si vuole fare. La loro forma nel caso del 68k è del tipo: Bcc. Dove la B sta per BRANCH mentre "cc" sono le componenti che permettono di distinguere la condizione da considerare rispetto ai valori dello SR. In particolare, i salti condizionati operano in base ai valori dei 5 bit del \textbf{CCR (Condition Code Register)}, che sono i 5 bit meno significativi dello SR riportati in tabella \ref{table:SR68k}.
 
 I principali comandi sono i seguenti:
 \begin{lstlisting}
@@ -213,7 +235,7 @@ I salti a subroutine sono una tipologia di salto incondizionato. Tali salti fann
 \end{lstlisting}
 
 \subsection{Codici Logici}
-I codici logici sono operazioni che possono essere effettuate su degli operandi operando bit a bit. Da notare che per i codici logici si può avere l'indirizzamento indiretto solo per la sorgente e non per il destinatario. Esempi di codici logici sono i seguenti:
+I codici logici sono operazioni che possono essere effettuate su degli operandi lavorando bit a bit. Da notare che per i codici logici si può avere l'indirizzamento indiretto solo per la sorgente e non per il destinatario. Esempi di codici logici sono i seguenti:
 \begin{lstlisting}
     AND #3, D0      * AND bit a bit con valore immediato, D0 = D0 & 3
     AND.W D0, D1    * AND tra registri, D1 = D1 & D0
@@ -360,8 +382,8 @@ WHILE_END:     * Codice successivo dopo il ciclo
 
 Le chiamate a subroutine possono essere viste come una sorta di chiamate a funzione. Esse, quindi, possono avere sia degli operandi di ingresso che degli operandi di uscita. La "comunicazione" degli operandi con la subroutine può avvenire in due principali modi:
 \begin{itemize}
-    \item \textbf{Con registri interni}: Gli operandi vengono caricati nei registri interni prima di chiamare la subroutine, che poi ci lavorerà sopra. Quindi i registri interni vengono utilizzati come una sorta di comunicazione
-    \item \textbf{Con Stack}: Gli operandi sono locati sullo stack, ciò richiede quindi una gestione anche del puntatore dello stack SP
+    \item \textbf{Con registri interni}: Gli operandi vengono caricati nei registri interni prima di chiamare la subroutine, che poi ci lavorerà sopra. Quindi i registri interni vengono utilizzati come una sorta di canale di comunicazione.
+    \item \textbf{Con Stack}: Gli operandi sono allocati sullo stack, ciò richiede quindi una gestione anche del puntatore dello stack SP.
 \end{itemize}
 
 Un esempio di chiamata a subroutine con memorizzazione degli operandi nello stack è il seguente:
@@ -391,7 +413,7 @@ SUM_SUB:    MOVE.L  (A7)+, D0     * Pop del primo operando dallo stack
 
             RTS                   * Ritorna al chiamante
 \end{lstlisting}
-\newpage
+
 Esempio di chiamata a subroutine con operandi nello stack e risultato memorizzato nello stack
 \begin{lstlisting}
             MOVE.L  #5, D0        * Carica il primo operando in D0
@@ -439,7 +461,7 @@ SUM_REGS:   ADD.L   D1, D0       * Somma D0 + D1, risultato in D0
 \end{lstlisting}
 
 \subsection{Valutazione degli accessi in memoria}
-Quando utilizzo i comandi precedentemente presentati avrò una quantità diversa di accessi in memoria in base alla composizione che ho dato al mio codice. Gli accessi in memoria dipendono fortemente dalla tipologia di architettura che ho adottato. In generale gli accessi in memoria possono avvenire per 2 tipologie di operazioni: Accesso in memoria Per le Istruzioni (PI) o accesso in memoria Per le Operazioni (PO).
+Utilizzando i comandi precedentemente presentati, il processore può accedere in memoria principale. Gli accessi in memoria dipendono fortemente dalla tipologia di architettura che ho adottato. In generale gli accessi in memoria possono avvenire per 2 tipologie di operazioni: Accesso in memoria per le Istruzioni (PI) o accesso in memoria Per le Operazioni (PO).
 Veodiamo degli esempi per capire meglio di cosa si sta parlando:
 \begin{table}[h]
     \centering
@@ -461,9 +483,9 @@ Veodiamo degli esempi per capire meglio di cosa si sta parlando:
 Per contare gli accessi in memoria bisogna effettuare delle osservazioni in base alla parte che si sta analizzando.
 Per l'accesso \textbf{Per le Istruzioni (PI)} si ragiona sui seguenti accessi:
 \begin{itemize}
-    \item \textbf{Prelievo dell'istruzione}: Un operazione che non mancherà mai sarà sempre il prelievo dell'istruzione, che impone che il mio PI non potrà mai essere nullo
-    \item \textbf{Operandi immediati}: se nel mio comando ho degli operandi immediati, allora dovrò accedere anche altre volte alla memoria per il prelievo di tale operando. I miei accessi, per questo caso, sono dettati dalla lunghezza dell'operando rispetto ai miei bus disponibili. Per esempio, se sono in un architettura a 16 bit devo prelevare un immegiato considerato una WORD, allora il numero di accessi aggiuntivi per prelevare l'immediato è uguale a 1. Mentre se stessi lavorango con le Long World (32 bit), allora il numero di accessi, a parità di architettura, sarà 2
-    \item \textbf{Variabili}: se sto utilizzando delle variabili, che indicano delle locazioni di memoria dirette, allora dovrò fare un numero di accessi alla memoria che mi permette di prelevare gli indirizzi (tali indirizzi sono lunghi tutti 32 bit). Pertanto con un architettura a 16 bit dovrò considerare sempre 2 accessi per ogni variabile per prelevare tali indirizzi
+    \item \textbf{Prelievo dell'istruzione}: Un operazione che non mancherà mai sarà sempre il prelievo dell'istruzione, che impone che il mio PI non potrà mai essere nullo;
+    \item \textbf{Operandi immediati}: se nel mio comando ho degli operandi immediati, allora dovrò accedere anche altre volte alla memoria per il prelievo di tale operando. I miei accessi, per questo caso, sono dettati dalla lunghezza dell'operando rispetto ai miei bus disponibili. Per esempio, se sono in un architettura a 16 bit devo prelevare un immegiato considerato una WORD, allora il numero di accessi aggiuntivi per prelevare l'immediato è uguale a 1. Mentre se stessi lavorango con le Long World (32 bit), allora il numero di accessi, a parità di architettura, sarà 2;
+    \item \textbf{Variabili}: se sto utilizzando delle variabili, che indicano delle locazioni di memoria dirette, allora dovrò fare un numero di accessi alla memoria che mi permette di prelevare gli indirizzi (tali indirizzi sono lunghi tutti 32 bit). Pertanto con un architettura a 16 bit dovrò considerare sempre 2 accessi per ogni variabile per prelevare tali indirizzi;
 \end{itemize}
 
 Per l'accesso \textbf{Per gli Operandi (PO)}, i parametri risultano più o meno gli stessi, ad esclusione del prelievo istruzione e della variabile. Le operazioni che si contano per tale processo sono:
@@ -473,4 +495,4 @@ Per l'accesso \textbf{Per gli Operandi (PO)}, i parametri risultano più o meno 
     \item \textbf{Variabili}: Quando si utilizzano le variabili, oltre a prelevare gli indirizzi dalla "zona istruzioni" bisogna prelevare gli operando. La conta del numero di accessi per il prelievo degli operandi è uguale al caso di indirizzamento indiretto
 \end{itemize}
 
-Nel caso degli accessi PO, si è prevista la considerazione per singoli operandi. Quindi in base al numero di operandi presenti, la loro lunghezza prefissata, il loro modo di indirizzamento, si riesce a comprendere (cumulando le specifiche), il numero di accessi che bisogna effettuare in memoria ed il motivo di tali accessi
+Nel caso degli accessi PO, si è prevista la considerazione per singoli operandi. Quindi in base al numero di operandi presenti, la loro lunghezza prefissata, il loro modo di indirizzamento, si riesce a comprendere (cumulando le specifiche), il numero di accessi che bisogna effettuare in memoria ed il motivo di tali accessi.
