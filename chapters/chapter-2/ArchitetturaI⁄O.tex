@@ -397,7 +397,7 @@ FINE    MOVE.L  (A7)+,D0
         RTE
 \end{lstlisting}
 
-La configurazione effettuata in DVBOUT differisce da quella presentata in precedenza solo dalla stringa scritta nel CRB, in quanto le transizioni attive di CB1 scatenano un'interruzione sul CRB7. Il main attiva dunque le interruzioni agendo sullo status register, e in seguito procede con un primo invio (altrimenti il sistema resterebbe in stallo). Osserviamo che è necessaria sempre la lettura fittizia sul registro dati per abbassare CRB7, in quanto non sappiamo a pripri in che stato si trovi. Il main scrive dunque un carattere sul registro dati, e questo provoca la transizione alto-basso di CB2 che a sua volta provoca la transizione alto-basso di CA1, che quindi setta a 1 il flag CRA7 e scatena un'interruzione che gestisce il dispositivo ricevitore: questo farà una lettura sul registro dati del porto A, e questo comporterà l'abbassamento di CRA7 e di CA2, che comporterà l'abbassamento di CB1, che scatenerà un'interruzione su CRB7. Questa interruzione sarà gestita dalla ISR4. 
+La configurazione effettuata in DVBOUT differisce da quella presentata in precedenza solo dalla stringa scritta nel CRB, in quanto le transizioni attive di CB1 scatenano un'interruzione sul CRB7. Il main attiva dunque le interruzioni agendo sullo status register, e in seguito procede con un primo invio (altrimenti il sistema resterebbe in stallo). Osserviamo che è necessaria sempre la lettura fittizia sul registro dati per abbassare CRB7, in quanto non sappiamo a priori in che stato si trovi. Il main scrive dunque un carattere sul registro dati, e questo provoca la transizione alto-basso di CB2 che a sua volta provoca la transizione alto-basso di CA1, che quindi setta a 1 il flag CRA7 e scatena un'interruzione che gestisce il dispositivo ricevitore: questo farà una lettura sul registro dati del porto A, e questo comporterà l'abbassamento di CRA7 e di CA2, che comporterà l'abbassamento di CB1, che scatenerà un'interruzione su CRB7. Questa interruzione sarà gestita dalla ISR4. 
 
 \begin{lstlisting}
 *** LOGICA INTERRUPT RICEZIONE ***
@@ -442,6 +442,23 @@ INT3    MOVE.W  A1,-(A7)
 
 In questo esempio non cambia nulla dal caso precedente. 
 Per ulteriori esercizi ed esempi, consultare il capitolo \ref{par:Esercitazioni}.
+
+\subsubsection{Tempificazione comunicazione tramite PIA}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\textwidth]{img/PIA_temp.png}
+    \caption{tempificazione PIA}
+    \label{img:temp_PIA}
+\end{figure}
+
+Come si può osservare dalla figura \ref{img:temp_PIA}, è possibile schematizzare l'andamento temporale dello stato logico dei segnali coinvolti nella comunicazione:
+\begin{itemize}
+    \item \textbf{fase 1}: Il primo sistema scrive un carattere sul registro dati del porto B, e, per quanto specificato nei bit[3:5] del registro di controllo del porto B, si abbassa CB2 che è cortocircuitato a CA1 come specificato in figura \ref{img:PIA-CON}. Una transizione alto-basso di CA1 setta a 1 il bit CRA7 e si scatena un'interruzione per il secondo sistema, che attiva la ISR relativa alla lettura del dato;
+    \item \textbf{fase 2}: La ISR del secondo sistema legge il dato nel registro dati della PIA porto A e immediatamente si abbassa il flag CRA7 e CA2, cortocircuitato a CB1, e la transizione alto-basso di CB1 setta alto il bit CRB7 del primo sistema e questo scatena un'interruzione che verrà gestita dalla ISR del primo sistema per l'invio di un nuovo dato. La transizione alto basso di CB1 fa tornare alto CB2 e di conseguenza anche CA1 in accordo a quanto specificato nel registro di controllo;
+    \item \textbf{fase 3}: Lettura fittizia per assicurarsi che CRB7 sia nello stato low;
+    \item \textbf{fase 4}: Inizia una nuova scrittura a carico della ISR del primo sistema, che scrive un carattere nel registro dati del porto B della PIA, e questo fa di nuovo abbassare CB2 e di conseguenza anche CA1. La transizione di CA1 solleva un'interruzione come visto in precedenza che sarà gestita dalla ISR del secondo sistema che leggerà il carattere. La transizione di CA1 alza anche CA2 e CB1 come specificato nel registro di controllo CRA[3:5].
+    \item \textbf{fase 5-6}: Si procede in maniera analoga a quanto visto nelle fasi 2 e 3.
+\end{itemize}
 \newpage
 % \subsubsection{Comunicazione parallela tramite PIA}
 % Entrando nei dettagli del processo di comunicazione, bisognerà fare particolare attenzione ai seguenti registri:
@@ -644,7 +661,7 @@ L'interruzione è un evento che cambia la normale esecuzione di un programma per
     \item \textbf{Eccezioni}: Funzionano come le interruzioni, con la differenza che vengono scatenate internamente rispetto al processore, quindi non vengono gestite dai dispositivi ma dal programma stesso, tale condizione fa eseguire comunque una ISR, con l'obbiettivo di dover gestire particolari casistiche (es. divisione per 0)
 \end{itemize}
 
-\begin{figure}
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.5\textwidth]{img/BootInt.png}
     \caption{Ciclo di esecuizone con interrupt}\label{img:bootint}
