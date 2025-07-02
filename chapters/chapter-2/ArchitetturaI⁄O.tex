@@ -3,16 +3,16 @@ In generale un dispositivo di I/O può essere visto come l'insieme di tre parti 
 
 \begin{itemize}
 
-    \item \textbf{Registri Dato, Stato e Controllo}: Tali registri sono quelli che interagiscono in maniera diretta con la CPU, e vengono utilizzati da quest'ultima per controllare e gestire le informazioni di quel dato dispositivo. Tali registri sono presenti internamente all'architattura del Calcolatore (ad esempio sulla scheda madre);
+    \item \textbf{Registri Dato, Stato e Controllo}: Tali registri sono quelli che interagiscono in maniera diretta con la CPU, e vengono utilizzati da quest'ultima per controllare e gestire le informazioni del dispositivo. Tali registri sono presenti internamente all'architattura del Calcolatore (ad esempio sulla scheda madre);
 
     \item \textbf{Sistema di adattamento}: Il sistema di adattamento adatta i segnali provenienti dal mondo esterno per essere letti o scritti nei registri di Dato, Stato e Controllo, e quindi permette di adattare l'attacco esterno (tipo l'USB che utilizza comunicazioni sequenziali), con la comunicazione parallela che il processore ha con i registri;
 
-    \item \textbf{Mondo esterno}: Per mondo esterno si intende tutta la parte che interagisce con il dispositivo in maniera fisica, ed il dispositivo fisico stesso. Quindi immaginiamoci anche una tastiera con il suo connettore USB.
+    \item \textbf{Mondo esterno}: Per mondo esterno si intende tutta la parte che interagisce con il dispositivo in maniera fisica, ed il dispositivo fisico stesso. (immagina una tastiera con il suo connettore USB).
 
 \end{itemize}
 
 Un esempio di dispositivo esterno è la memoria HDD.
-La memoria HDD ha difatti i tre registri di Dato, Stato e Controllo, quando si vuole scrivere su tale memoria, la CPU va a modificare i registri in modo da garantire tale operazione. Mentre la CPU modifica tali dati, il sistema di adattamento converte i dati presenti in quei tre registri in movimenti della testina + scrittura, rispettando sempre i controlli dati dalla CPU. La scrittura/lettura dei dati tramite la testina e la testina stessa rappresentano, invece, il mondo esterno.
+La memoria HDD ha difatti i tre registri di Dato, Stato e Controllo: nel processo di scrittura in memoria, la CPU modifica i suddetti registri. Mentre la CPU modifica tali dati, il sistema di adattamento converte i dati presenti in quei tre registri in movimenti della testina + scrittura, rispettando sempre i controlli dati dalla CPU. La scrittura/lettura dei dati tramite la testina e la testina stessa rappresentano, invece, il mondo esterno.
 Un altro esempio di periferica è la classica porta \textbf{UART}, che trasmette i sui dati in serie, ma il suo controllo avviene in parallelo. Pertanto al suo interno avrà sia un timer per scandire il clock in base alla tipologia di comunicazione, e poi avrà un buffer parallelo-serie, che converte l'informazione da trasmettere in tanti bit seriali. Oltre alla parte parallelo-serie sarà anche dotato di una parte serie-parallelo, nel caso della ricezione.
 
 
@@ -20,9 +20,9 @@ Un altro esempio di periferica è la classica porta \textbf{UART}, che trasmette
 Le tipologie di collegamento che si possono avere tra un processore e le sue periferiche sono le seguenti:
 \begin{itemize}
     \item \textbf{Collegamento passivo}: la periferica e la CPU non condividono alcun tipo di comunicazione. Quindi la CPU presuppone che la periferica sia sempre pronta ed è quindi solo lei a decidere quando e come utilizzare i dati, anche se questi magari non sono pronti o ben processati;
-    \item \textbf{Collegamento Sincrono}: La periferica e la CPU comunicano tra loro, la comunicazione è sincronizzata da un clock comune;
-    \item \textbf{Collegamento con Handshacking}: L'handshacking è una modalità di comunicazione asincrona, poichè si sfruttano dei segnali di comunicazione tra la CPU e la periferica che permettono di capire quando il dato è "pronto" o meno. Una classica implementazione è quella del segnale di \textit{req} che viene alzato dal processore per far capire che vuole leggere e dall'\textit{ACK} alzato dalla periferica che fa comprendere che il dato è pronto o che è stata presa in carico una determinata operazione richiesta. La differenza con la comunicazione sincrona è l'assenza di base dei tempi comune (clock);
-    \item \textbf{Collegamento semisincrono}: Si condividono le stesse modalità di una comunicazione con handshacking, con la differenza che la sincronizzazione delle due parti avviene mediante uno stesso clock;
+    \item \textbf{Collegamento Sincrono}: La periferica e la CPU comunicano tramite un clock di riferimento per entrambe;
+    \item \textbf{Collegamento con Handshacking}: L'handshacking è una modalità di comunicazione asincrona, poichè si sfruttano dei segnali di comunicazione tra la CPU e la periferica che permettono di sincronizzare le operazioni. Una classica implementazione è quella del segnale di \textit{req} che viene alzato dal processore per far capire che vuole leggere e dall'\textit{ACK} alzato dalla periferica che fa comprendere che il dato è pronto o che è stata presa in carico una determinata operazione richiesta. La differenza con la comunicazione sincrona è l'assenza di base dei tempi comune (clock);
+    \item \textbf{Collegamento semisincrono}: La trasmissione dei dati è controllata da una base dei tempi comune, ma vengono usati anche segnali di sincronizzazione aggiuntivi (segnali di start e allineamento periodico) per mantenere la sincronizzazione tra trasmettitore e ricevitore;
 \end{itemize}
 
 \subsection{Interfacciamento CPU e periferica}
@@ -32,26 +32,30 @@ Per utilizzare le periferiche la CPU deve poter accedere ai registri di Dato, St
     \item \textbf{I/O Mapped}: La CPU dispone di specifici codice operativi per interagire con le periferiche di I/O;
 \end{itemize}
 
-Nel nostro caso il Motorola 68k è una tipologia di architettura \textbf{memory mapped}, e quindi la trattazione dei registri avviene mediante i codici operativi di accesso ai registri della memoria. 
+Nel nostro caso, il Motorola 68k è una tipologia di architettura \textbf{memory mapped}, e quindi la trattazione dei registri avviene mediante i codici operativi di accesso ai registri della memoria. 
 
 \subsubsection{Memory Mapped I/O}
-Nel caso di interfacciamento con una struttura Memory Mapped, l'accesso ai registri di una determinata periferica avvengono tramite i bus di collegamento classici, che collegano anche la memoria ecc. Ciò quindi mi limita nell'utilizzo degli indirizzi, poichè, quando faccio riferimento ad un registro di una periferica, tale indirizzo non deve appartenere al set di indirizzi della memoria centrale.
+Nel caso di interfacciamento con una struttura Memory Mapped, l'accesso ai registri di una determinata periferica avvengono tramite bus di collegamento. Ciò rappresenta un limite nell'uso degli indirizzi, poichè quando faccio riferimento ad un registro di una periferica, tale indirizzo non deve appartenere al set di indirizzi della memoria centrale.
 
 \subsubsection{I/O Mapped}
 Nel caso di interfacciamento con una struttura I/O Mapped, l'accesso ai registri di una determinata periferica avviene mediante degli specifici comandi. Questo perchè le periferiche sono collegate a bus dedicati o hanno una gestione dedicata, che quindi differisce dalle comunicazioni che avvengono in generale all'interno dell'architettura al costo di avere meno modi di indirizzamento, dato che non si userà più la MOVE che è un codice operativo \textit{ortogonale}.
 
 \subsubsection{Logiche di selezione}
-Quando devo selezionare la mia periferica a cui faccio riferimento, utilizzo una serie di indirizzi. Tali indirizzi possono essere utili al fine di realizzare i seguenti tipi di logica:
+Nel processo di selezione di una periferica collegata alla cpu tramite un bus, vengono utilizzati degli indirizzi per realizzare una tra queste logiche:
 \begin{itemize}
-    \item \textbf{Logica tristate}: Logica che quando una periferica non vede il suo indirizzo sui bus adeguati smette di interagire con il sistema, quindi ignora la variazione dei dati sul bus. Tale logica, quindi utilizza l'indirizzo interno della nostra periferica.
-    \item \textbf{Logica Plug-and-play}: L'indirizzo della periferica viene scelto in base ad una serie di indirizzi disponibili.
+    \item \textbf{Logica tristate}: è una logica che disconnette la periferica dal bus dati quando non riconosce il proprio indirizzo. In questo stato, la periferica non interferisce con le comunicazioni e ignora qualsiasi variazione presente sul bus. La logica tristate si basa sull'indirizzo interno assegnato alla periferica stessa. Si definisce \textit{tristate} perchè un'uscita può trovarsi in tre stati logici:
+    \begin{itemize}
+        \item \textbf{0}: livello basso;
+        \item \textbf{1}: livello alto;
+        \item \textbf{Alta impedenza}: praticamente disconnesso; 
+    \end{itemize}
+    \item \textbf{Logica Plug-and-play}: in questo caso, l'indirizzo della periferica non è fisso, ma viene selezionato dinamicamente tra un insieme di indirizzi disponibili. Questo consente di configurare automaticamente in fase di inizializzazione le periferiche senza dover intervenire manualmente per impostare l'indirizzo.
 \end{itemize}
 
 \subsection{BUS}
-I bus sono i collegamenti che interconnettono le varie componenti di un calcolatore, ovvero, CPU, memoria e periferiche di I/O.
-In generale non vi è una tipologia unica di bus, ve ne sono varie in base alla tipologia di utilizzi e alla tipologia di tecnologie utilizzate.
-I bus, si contraddistinguono principalmente per la divisione che attuano sui loro collegamenti, ma in generale, le informazioni che vengono trasportate sono solitamente le stesse.
-Le informazioni, quindi, sono dipartite tra i vari collegamenti presenti in un BUS. I collegamenti generici che si possono identificare in un bus sono:
+I bus sono responsabili del collegamento tra le varie componenti di un calcolatore (CPU, memoria e periferiche di I/O).
+In generale, le tipologie di bus variano in base all'applicazione e alla tecnologia utilizzata. I bus si contraddistinguono principalmente per la divisione che attuano sui loro collegamenti, ma in generale, le informazioni che vengono trasportate sono le stesse.
+Queste sono dipartite tra i vari collegamenti presenti in un BUS. I collegamenti generici che si possono identificare in un bus sono:
 \begin{itemize}
     \item \textbf{Alimentazione}: Collegamenti che principalmente comprendono la VCC (o più VCC), che sarebbero le tensioni di alimentazione delle componenti, ed il cavo di terra (o GND);
     \item \textbf{Dati}: Collegamenti che trasportano i dati che vengono scambiati tra i vari dispositivi;
@@ -60,67 +64,68 @@ Le informazioni, quindi, sono dipartite tra i vari collegamenti presenti in un B
     \item \textbf{Stato}: Collegamenti che permettono il controllo di flusso e la segnalazione di eventuali conflitti o errori;
 \end{itemize}
 
-Data una tipologia di bus, può capitare che la periferica che vado ad utilizzare non è ad-hoc per quella determinata tipologia di bus. Pertanto, quello che posso fare, è considerare l'utilizzo di un \textbf{adapter}, che mi permette di adattare il bus classico con la tipologia di attacco specifica per la mia periferica. Oltretutto in alcuni casi, quando il dispositivo non permette la configurazione degli indirizzi, per evitare conflitti, l'adapter gestisce anche la gestione di tale indirizzo rispetto al sistema.
+Data una tipologia di bus, può succedere che la periferica considerata non è compatibile con quella determinata tipologia di bus. Pertanto, si può considerare l'uso di un \textbf{adapter}, che mi permette di adattare il bus classico con la tipologia di attacco specifica per la mia periferica. Oltretutto in alcuni casi, quando il dispositivo non permette la configurazione degli indirizzi, per evitare conflitti, l'adapter gestisce anche la gestione di tale indirizzo rispetto al sistema.
 
 \subsection{Driver}
-I driver sono dei programmi che permettono di capire come il processore vada ad utilizzare una determinata periferica.
-Le tipologie di approccio che si possono avere nella scrittura dei driver sono varie, la più primitiva è il polling.
-Il \textbf{Polling} è un modo con cui il processore va ad interagire con la periferica. In generale si va a dare un primo segnale di controllo alla periferica e si aspetta uno specifico valore di stato per poter accedere al dato. Tali sistema è altamente inefficiente, poichè mentre la CPU aspetta la riposta della periferica passano dei periodi di clock dove la CPU rimane in attesa. Il tempo che quindi la CPU rimane senza eseguire delle operazioni utili è detto \textbf{Busy-waiting}. Un possibile codice di implementazione del polling è [\ref{m68:polling}]
+I driver sono dei software di basso livello che consentono di tradurre le richieste delle applicazioni per le periferiche in comandi specifici comprensibili dall'hardware. Ogni tipo di periferica necessita del proprio driver, e spesso è fornito dal costruttore dell'hardware stesso. 
+Nella programmazione di un driver si possono seguire vari approcci in base al modo in cui vengono gestiti i tempi e le modalità di comunicazione con la CPU. L'approccio più semplice e primitivo è il \textbf{Polling}. Questo approccio consiste nel dare un primo segnale di controllo alla periferica e si \textit{aspetta} uno specifico valore di stato per poter accedere al dato. Questo sistema è tuttavia inefficiente, poichè mentre la CPU aspetta la riposta della periferica si sprecano dei periodi di clock nei quali la CPU non esegue operazioni utili. Lo stato in cui la CPU permane senza eseguire delle operazioni utili è detto \textbf{Busy-waiting}. Un possibile codice di implementazione di questo tipo di approccio è [\ref{m68:polling}]:
 
 \begin{lstlisting}[caption={Codice polling}, label=m68:polling]
-        ORG      $8000
-*Inizializzo lo stato dei miei registri
-        MOVE.B   #$00,C
-        MOVE.B   #$00,S
-*Vado a considerare la zona di memoria dove voglio salvare i dati
-        MOVEA.L  #VAR1,A0
+        ORG     $8000  * Inizializzazione registri
+        MOVE.B  #$00,C
+        MOVE.B  #$00,S
+        MOVEA.L #VAR1,A0
         MOVE.W  #0,D0
-*Devo prelevare N dati quindi ciclo N volte
-FOR     CMP.W   #N,D0
+FOR     CMP.W   #N,D0   * N byte da ricevere
 BGE   FUORI
-
-*Qui devo scrivere il driver sapendo  che devo ricevere un byte
-
-        MOVE.B  #$01,C  *Vado a settare un controllo
-*Qui inizia il ciclo di polling dove attendo uno specifico valore dello stato
-L1      MOVE.B  S,D1
-        AND.B  #$80,D1  *Se il bit si e' alzato ho finito. Altrimenti continuo ad aspettare
-        BEQ  L1
-
-*Qui il dato e' stato letto, poiche' ho il flag di stato alzato
+* Codice Driver:
+        MOVE.B  #$01,C  * Set del controllo
+L1      MOVE.B  S,D1    * Inizio ciclo polling
+        AND.B   #$80,D1  
+* Se il bit si e' alzato ho finito. 
+* Altrimenti continuo ad aspettare
+        BEQ     L1
         MOVE.B  D,(A0)+ *Inserisco il dato in memoria
-        MOVE.B  #$00,C  *Vado a resettare il segnale di Controllo
-        MOVE.B  #$00,S  *Vado ad "eludere" il sistema su un segnale di stato
-
-        ADD.B  #1,D0             *Incremento il conteggio
-        BRA  FOR                 *Ripeti
+        MOVE.B  #$00,C  *Reset segnale di Controllo
+        MOVE.B  #$00,S  *Reset Segnale di stato 
+        ADD.B   #1,D0             
+        BRA     FOR
 FUORI
-
         ORG     $8100
 D       DS.B    1   *Registro dato
 S       DS.B    1   *Registro Stato
 C       DS.B    1   *Registro Controllo
-
-N       EQU     5   *Quantita' di valori da considerare
+N       EQU     5   *Dimensione array da trasferire
 VAR1    DS.B    5   *Array effettivo di raccolta dati
 \end{lstlisting}
 \newpage
 Il codice [\ref{m68:polling}] presenta però le seguenti criticità:
 \begin{itemize}
-    \item \textbf{Mancata Generalizzazione}: Si vanno a considerare in maniera diretta i registri in memoria D,S e C. Che per l'implmentazione di un driver riutilizzabile non è proprio la scelta corretta. Uno stesso dispositivo accessibile mediante diversi indirizzi avrebbe bisogno di un driver diverso;
+    \item \textbf{Mancata Generalizzazione}: Si vanno a considerare in maniera diretta i registri in memoria D,S,C che per l'implmentazione di un driver riutilizzabile non è una scelta corretta. Diverse istanze della stessa periferica (collegate quindi ad indirizzi diversi) avrebbero bisogno di un driver diverso;
     \item \textbf{Polling}: L'attesa che viene svolta all'interno di tale codice non permette al processore di eseguire altre operazioni prima di aver ricevuto tutti i caratteri;
-    \item \textbf{Gestione dei malfunzionamenti}: Se la periferica ha un qualunque tipo di malfunzionamento e quindi non aggiorna mai il registro di stato, tale ciclo eseguirà all'infinito senza mai fermarsi;
+    \item \textbf{Gestione dei malfunzionamenti}: Se la periferica ha un qualunque tipo di malfunzionamento e quindi non aggiorna mai il registro di stato, tale ciclo eseguirà all'infinito senza mai fermarsi.
 \end{itemize}
 
-Le due problematiche (o criticità), possono essere affrontate in vario modo. Per la prima la soluzione è molto semplice, al posto di andare a considerare i registri di Dato, Stato e Controllo in maniera diretta, possono essere considerati come registri indirizzo (Ai), a cui vado ad associare gli indirizzi di tali registri. Tali inidirizzi poi vengono settati secondo un determinato criterio prima della chiamata al driver.
-Per ovviare, invece, al secondo problema c'è il bisogno di considerare le \textbf{interruzioni}. Mentre per l'ultimo problema la soluzione è l'introduzione di \textbf{timer}, che permettono di capire quando un sistema sta impiegando un tempo più grande del dovuto per eseguire un operazione, ciò permette di poter gestire ed uscire da situazioni di eventuali guasti.
+Le due criticità possono essere risolte in diversi modi. La soluzione alla prima problematica è molto semplice: al posto di considerare i registri di Dato, Stato e Controllo in maniera diretta, possono essere considerati come registri indirizzo (Ai), a cui vado ad associare gli indirizzi di tali registri. Tali inidirizzi poi vengono settati secondo un determinato criterio prima della chiamata al driver.
+Per ovviare al secondo problema c'è il bisogno di considerare le \textbf{interruzioni}. Per l'ultimo problema la soluzione è l'introduzione di \textbf{timer}, che permettono di capire quando un sistema sta impiegando un tempo più grande del dovuto per eseguire un' operazione, e ciò permette di poter gestire situazioni indesiderate di attesa indefinita.
 
 \subsection{PIA} \label{par:PIA}
 
 La \textbf{PIA (Periferal Interface adapter)} è un dispositivo di comunicazione parallela ad 8 bit. Tale architettura è un dispositivo hardware che si posiziona tra la periferica e il processore stesso. Essa è costituita architetturalmente da due tipologie diverse di porto, il porto A ed il porto B.[\ref{img:PIA}]
-Tali porti hanno dei registri che sono direzionali, quindi possono assumere una sola funzione (tra entrata ed uscita), in base alla loro specifica impostazione e configurazione.
-Prima di parlare di più porti ci concentriamo sulle comunicazioni a singolo porto; in generale le comunicazioni che avvengono tra due interfacce della PIA sono configurabili tramite i bit di configurazione del chipset. Nel nostro caso, la comunicazione che maggiormente utilizzeremo è quella dotata di handshacking, per cui si avrà una configuraizone ed un collegamento simile all'immagine [\ref{img:PIA-CON}].
-Il dispositivo PIA simulato in ASIM è derivato da quello commerciale MC6821. Questo è dotato di sei registri a 8 bit, tra cui: due registri per il trasferimento dei dati da e verso la periferica (\textit{PRA} e \textit{PRB}); due registri di controllo/stato (\textit{CRA} e \textit{CRB}); infine due registri per il controllo della direzione dei dati (\textit{DRA} e \textit{DRB}). Questi registri sono accessibili mediante indirizzamento interno secondo la tabella \ref{Tab:reg_ind_1}:
+Tali porti hanno dei registri che sono direzionali, quindi possono assumere una sola funzione (tra entrata ed uscita), in base alla loro configurazione.
+% Prima di parlare di più porti ci concentriamo sulle comunicazioni a singolo porto; in generale le comunicazioni che avvengono tra due interfacce della PIA sono configurabili tramite i bit di configurazione del chipset. Nel nostro caso, la comunicazione che maggiormente utilizzeremo è quella dotata di handshacking, per cui si avrà una configuraizone ed un collegamento simile all'immagine [\ref{img:PIA-CON}].
+Facendo riferimento alla figura \ref{img:PIA}, osserviamo che il dispositivo si interfaccia al MC68K con un bus dati a 8 bit bidirezionale, tre linee di \textit{chip select} CS, due linee di \textit{register select} RS, una linea di controllo per indicare un'operazione di lettura e scrittura RW, due linee di \textit{interrupt request} IRQ, una linea di \textit{enable} e una linea di \textit{reset}. 
+Il bus dati a 8 bit bidirezionale permette il trasferimento di dati tra il processore e la PIA, e i collegamenti seguono la logica \textit{three state}, ovvero permangono in uno stato di alta impedenza (off) tranne quando il processore performa una lettura su questi 8 bit. 
+La linea enable costituisce l'unico segnale di timing fornito al dispositivo. La linea RW trasmette un segnale generato dal processore per controllare la direzione del trasferimento dati sul bus. Per selezionare il dispositivo, le linee CS0 e CS1 devono essere alte mentre la linea $\overline{CS2}$ deve essere bassa.
+Le linee RS sono utilizzate come vedremo tra poco per selezionare registri interni alla PIA in combinazione con i control registers interni alla PIA. Le linee $\overline{IRQA}$ e $\overline{IRQB}$ sono utilizzate in accordo a quanto condfigurato nei registri di controllo per abbassarsi e segnalare alla cpu un'interruzione.
+Come si osserva in figura \ref{img:PIA}, lato periferica invece la PIA si interfaccia mediante due bus dati da 8 bit e quattro linee di interrupt/controllo. I due bus dati fanno riferimento al porto A e al porto B della medesima PIA. Per quanto riguarda il porto A, ognuna delle linee può essere programmata per essere input o output. Questo si può fare settando a 1 (output) o 0 (input) il corrispondente bit del \textit{Data direction register} DDRA. Un discorso analogo può essere fatto per il porto B.
+Per quanto riguarda le linee CA1 e CB1, sono linee di input utilizzate per settare i bit inerenti ai flag di interrupt dei control registers di A e B. CA2 è una linea che utilizzeremo con direzionalità output, e la funzionalità sarà chiarita dal control register del porto A. Un discorso analogo può essere fatto per CB2.
+
+\subsubsection{Configurazione PIA}
+Dopo un segnale di $\overline{RESET}$, tutti i registri della PIA vengono azzerati e segue una fase di configurazione da parte della CPU. In totale, le locazioni accessibili internamente alla PIA sono 6 e illustrate nella tabella \ref{Tab:reg_ind_1}
+
+
+% Il dispositivo PIA simulato in ASIM è derivato da quello commerciale MC6821. Questo è dotato di sei registri a 8 bit, tra cui: due registri per il trasferimento dei dati da e verso la periferica (\textit{PRA} e \textit{PRB}); due registri di controllo/stato (\textit{CRA} e \textit{CRB}); infine due registri per il controllo della direzione dei dati (\textit{DRA} e \textit{DRB}). Questi registri sono accessibili mediante indirizzamento interno secondo la tabella \ref{Tab:reg_ind_1}:
 
 \begin{table} [ht]
     \centering
@@ -140,7 +145,8 @@ Il dispositivo PIA simulato in ASIM è derivato da quello commerciale MC6821. Qu
 \end{table}
 
 Questi registri sono selezionabili dal processore mediante le linee RS1 ed RS0.
-Nel dettaglio, i registri di contollo sono a 8 bit suddivisi come indicato in tabella \ref{Tab:control_registers}:
+I \textit{Control Register} CRA e CRB permettono al processore di controllare l'operazione delle quattro linee di controllo periferica CA1, CA2, CB1, CB2. Permettono alla CPU inoltre di abilitare le linee di interruzione e controllare lo stato dei flag di interruzione. 
+Gli 8 bit del CRA sono commentati in tabella \ref{Tab:control_registers}:
 
 \begin{table}[ht]
     \centering
@@ -169,22 +175,93 @@ Nel dettaglio, i registri di contollo sono a 8 bit suddivisi come indicato in ta
     \label{Tab:control_registers}
 \end{table}
 
+Vediamo nel dettaglio il significato di questi bit nella tabella \ref{Tab:CRA} e nella tabella \ref{Tab:CRB}:
+\newpage
 
+\begin{table}[h!]
+\centering
+    \begin{tabular}{|c|c|p{9cm}|}
+    \hline
+    \multicolumn{3}{|c|}{\textbf{CRA}} \\
+    \hline
+    \textbf{Bit} & \textbf{Valore} & \textbf{Significato} \\
+    \hline
+    \multirow{2}{*}{0} & 0 & Disabilita la transizione di IRQA allo stato low in seguito ad una transizione attiva di CA1 \\
+                    & 1 &  Abilita la transizione di IRQA allo stato low in seguito ad una transizione attiva di CA1 \\
+    \hline
+    \multirow{2}{*}{1} & 0 & IRQA1 (bit 7) settato alto su transizioni alto-basso di CA1 \\
+                    & 1 & IRQA1 (bit 7) settato alto su transizioni basso-alto di CA1 \\
+    \hline
+    \multirow{2}{*}{2} & 0 & Selezionato DDRA \\
+                    & 1 & Selezionato PRA \\
+    \hline
+    5,4,3 & 100 & Operiamo secondo il procollo handshaking* \\
+                    
+    \hline
+    6 & X & IRQA2 non è affetto dalle transizioni di CA2 quando b5=0\\
+    \hline
+    7 & 1 & Bit di sola lettura, si alza su transizioni attive di CA1. Viene resettato da una lettura dell'output register A da parte della CPU \\
+    \hline
+    \end{tabular}
+    \caption{dettaglio bit CRA}
+    \label{Tab:CRA}
+\end{table}
 
-Entrando nei dettagli del processo, bisognerà fare particolare attenzione ai seguenti registri:
+\begin{table}[h!]
+\centering
+    \begin{tabular}{|c|c|p{9cm}|}
+    \hline
+    \multicolumn{3}{|c|}{\textbf{CRB}} \\
+    \hline
+    \textbf{Bit} & \textbf{Valore} & \textbf{Significato} \\
+    \hline
+    \multirow{2}{*}{0} & 0 & Disabilita la transizione di IRQB allo stato low in seguito ad una transizione attiva di CB1 \\
+                    & 1 &  Abilita la transizione di IRQB allo stato low in seguito ad una transizione attiva di CB1 \\
+    \hline
+    \multirow{2}{*}{1} & 0 & IRQB1 (bit 7) settato alto su transizioni alto-basso di CB1 \\
+                    & 1 & IRQB1 (bit 7) settato alto su transizioni basso-alto di CB1 \\
+    \hline
+    \multirow{2}{*}{2} & 0 & Selezionato DDRB \\
+                    & 1 & Selezionato PRB \\
+    \hline
+    5,4,3 & 100 & Operiamo secondo il procollo handshaking* \\
+                    
+    \hline
+    6 & X & IRQB2 non è affetto dalle transizioni di CB2 quando b5=0\\
+    \hline
+    7 & 1 & Bit di sola lettura, si alza su transizioni attive di CB1. Viene resettato da una lettura dell'output register B da parte della CPU \\
+    \hline
+    \end{tabular}
+    \caption{dettaglio bit CRB}
+    \label{Tab:CRB}
+\end{table}
+
+Un'importante osservazione va fatta sui bit 5,4,3. Durante il corso è stata affrontata il solo caso in cui b5 = 1, ovvero la linea CA2 (CB2) è una linea di \textbf{output}, e il caso in cui b4,b3 = 00, ovvero:
 \begin{itemize}
-    \item \textbf{CA1,CB1}: Sono registri che possono assumere solo direzione di ingresso e solitamente vengono usati come "lettori" di segnali SYN o segnali ACK da parte dell'altro dispositivo;
-    \item \textbf{CA2,CB2}: Sono i registri che possono essere configurati(sia di ingresso che di uscita), ed in generale, in base al protocollo che si vuole interpretare, vengono settati in una determinata modalità di funzionamento (dipendente dalla tipologia di protocollo che si vuole implementare);
-    \item \textbf{Dato}: Il bus dati trasmette parallelamente i dati tra le due periferiche in base al protocollo di handshacking utilizzato. I bus dati sono unidirezionali ma la direzione è programmabile. 
+    \item CA2 si abbassa dopo una lettura da parte della CPU dell'output register A, mentre si alza sulla successiva transizione attiva di CA1 come specificato nel bit 1.
+    \item CB2 si abbassa dopo una scrittura da parte della CPU sull'output register B, mentre si alza sulla successiva transizione attiva di CB1 come specificato nel bit 1. b7 va innanzitutto resettato con una \textit{lettura fittizia} sull'output register B.
 \end{itemize}
 
-\begin{figure}
+
+\begin{figure}[ht]
     \centering
     % \includegraphics[width=0.45\textwidth]{img/PIA.png}
     % \hfill
-    \includegraphics[width=0.75\textwidth]{img/PIA-SCHEME.jpg}
-    \caption{Architettura base della PIA}\label{img:PIA}
+    \includegraphics[width=0.9\textwidth]{img/PIA-SCHEME.jpg}
+    \caption{Architettura MC68A21CP} \label{img:PIA}
 \end{figure}
+
+
+\subsubsection{Comunicazione parallela tramite PIA}
+% Entrando nei dettagli del processo di comunicazione, bisognerà fare particolare attenzione ai seguenti registri:
+% \begin{itemize}
+%     \item \textbf{CA1,CB1}: Sono registri che possono assumere solo direzione di ingresso e solitamente vengono usati come "lettori" di segnali SYN o segnali ACK da parte dell'altro dispositivo;
+%     \item \textbf{CA2,CB2}: Sono i registri che possono essere configurati(sia di ingresso che di uscita), ed in generale, in base al protocollo che si vuole interpretare, vengono settati in una determinata modalità di funzionamento (dipendente dalla tipologia di protocollo che si vuole implementare);
+%     \item \textbf{Dato}: Il bus dati trasmette parallelamente i dati tra le due periferiche in base al protocollo di comunicazione utilizzato. I bus dati sono unidirezionali, ma la direzione è programmabile. 
+% \end{itemize}
+Per far si che due architetture possano comunicare è quindi importante definire come si andranno a collegare e quindi la direzione e l'interpretazione che bisogna dare ai registri. Una possibile architettura di collegamento è quella visibile all'immagine [\ref{img:PIA-CON}].
+Le linee D0-D7 sono di interfacciamento con il processore e sono bidirezionali in base alla natura dell'operazione richiesta (lettura o scrittura). 
+Poiché la PIA ha due porti distinti, può essere collegata al processore con due linee di interruzioni differenti denominate \textbf{IRQA} (porto A) e \textbf{IRQB} (porto B).  
 
 \begin{figure}
     \centering
@@ -192,9 +269,6 @@ Entrando nei dettagli del processo, bisognerà fare particolare attenzione ai se
     \caption{Collegamento tra due dispositivi tramite PIA}\label{img:PIA-CON}
 \end{figure}
 
-Per far si che le due architetture possano comunicare è quindi importante definire come si andranno a collegare e quindi la direzione e l'interpretazione che bisogna dare ai registri. Una possibile architettura di collegamento è quella visibile all'immagine [\ref{img:PIA-CON}].
-Le linee D0-D7 sono di interfacciamento con il processore e sono bidirezionali in base alla natura dell'operazione richiesta (lettura o scrittura). 
-Poiché la PIA ha due porti distinti, può essere collegata al processore con due linee di interruzioni differenti denominate \textbf{IRQA} (porto A) e \textbf{IRQB} (porto B).  
 
 Una volta definita la tipologia di architettura si va a decidere come queste periferiche dovranno interagire tra loro (definizione del protocollo), per cui si va ad impostare uno specifico registro di configurazione che permetterà di impostare le seguenti opzioni:
 
