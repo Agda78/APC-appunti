@@ -224,30 +224,30 @@ I principali comandi sono i seguenti:
 \subsubsection{Salti a subroutine}
 I salti a subroutine sono una tipologia di salto incondizionato. Tali salti fanno parte di architetture CISC principalmente, poichè alcune architetture RISC non prevedono tali funzioni. La presenza di tali funzioni permette di non dover gestire l'indirizzo di ritorno dalla subroutine, o almeno non direttamente dal programmatore. Le istruzioni che in motorola 68k sono principalmente utilizzate per la chiamata a subroutine sono le seguenti:
 \begin{lstlisting}
-    *Salta a una subroutine e salva il ritorno nello stack (push nello stack)
+    * Salta a una subroutine e salva il ritorno nello stack 
+    * (push nello stack)
     BSR label
-
     *Salta a una subroutine con indirizzo specifico o label
     JSR address/label
-
-    * Ritorna dalla subroutine (estrae l'indirizzo di ritorno dallo stack, fa il pop dallo stack)
+    * Ritorna dalla subroutine (estrae l'indirizzo di 
+    * ritorno dallo stack, fa il pop dallo stack)
     RTS
 \end{lstlisting}
 
 \subsection{Codici Logici}
 I codici logici sono operazioni che possono essere effettuate su degli operandi lavorando bit a bit. Da notare che per i codici logici si può avere l'indirizzamento indiretto solo per la sorgente e non per il destinatario. Esempi di codici logici sono i seguenti:
 \begin{lstlisting}
-    AND #3, D0      * AND bit a bit con valore immediato, D0 = D0 & 3
-    AND.W D0, D1    * AND tra registri, D1 = D1 & D0
-    AND.L (A0), D0  * AND tra valore in memoria puntato da A0 e D0
+    AND #3, D0      * AND bit a bit con valore immediato, D0=D0&3
+    AND.W D0, D1    * AND tra registri, D1=D1&D0
+    AND.L (A0), D0  * AND tra valore puntato da A0 e D0
 
-    OR #3, D0       * OR bit a bit con valore immediato, D0 = D0 | 3
-    OR.W D0, D1     * OR tra registri, D1 = D1 | D0
+    OR #3, D0       * OR bit a bit con valore immediato, D0=D0|3
+    OR.W D0, D1     * OR tra registri, D1=D1|D0
     OR.L (A0), D0   * OR tra valore in memoria puntato da A0 e D0
 
-    EOR #3, D0      * XOR bit a bit con valore immediato, D0 = D0 XOR 3
+    EOR #3, D0      * XOR bit a bit con valore immediato, D0=D0XOR3
     EOR.W D0, D1    * XOR tra registri, D1 = D1 XOR D0
-    EOR.L (A0), D0  * XOR tra valore in memoria puntato da A0 e D0
+    EOR.L (A0), D0  * XOR tra valore puntato da A0 e D0
 
     NOT D0          * Complemento bit a bit (negazione), D0 = ~D0
 \end{lstlisting}
@@ -257,50 +257,54 @@ I codici logici sono operazioni che possono essere effettuate su degli operandi 
 \subsection{Codici di Scorrimento}
 I codici di scorrimento permettono di effettuare delle operazioni di shift, che possono essere comode in alcune tipologie di operazioni
 \begin{lstlisting}
-    ASL #1, D0      * Shift aritmetico a sinistra di 1 bit (mantiene il segno), da notare che lo shift aritmetico ha l'effetto di moltiplicare per 2 (se convertiamo da decimale a binario il valore del registro prima e dopo lo shift), tranne se perdi bit significativi o alteri il segno, e dopo lo shift aritmetico possono essere modificati i bit del CCR)
+    ASL #1, D0      * Shift aritmetico a sinistra di 1 bit 
+                    *(mantiene il segno)
     ASR #1, D0      * Shift aritmetico a destra di 1 bit
 
-    LSL #1, D0      * Shift logico a sinistra di 1 bit (riempie con 0)
+    LSL #1, D0      * Shift logico a sinistra di 1 bit (0 fill)
     LSR #1, D0      * Shift logico a destra di 1 bit
 
-    ROL #1, D0      * Rotazione a sinistra di 1 bit (il bit piu' alto rientra da destra)
+    ROL #1, D0      * Rotazione a sinistra di 1 bit 
+                    * (il bit piu' alto rientra da destra)
     ROR #1, D0      * Rotazione a destra di 1 bit
 
     ROXL #1, D0     * Rotazione a sinistra con Carry
     ROXR #1, D0     * Rotazione a destra con Carry
 \end{lstlisting}
 
+Osserviamo che lo shift aritmetico a sinistra ha l'effetto di moltiplicare per 2 (se convertiamo da decimale a binario il valore del registro prima e dopo lo shift), tranne se perdi bit significativi o alteri il segno, e dopo lo shift aritmetico possono essere modificati i bit del CCR.
+
 \subsection{Codici di Confronto} \label{par:confronto}
 I codici di confronto sono molto importanti, poiché in accoppiata con i salti condizionati permettono di costruire tutti i costrutti fondamentali che possiamo trovare anche nei linguaggi di alto livello
 \begin{lstlisting}
-    CMP #5, D0      * Confronta D0 con 5 (D0 - 5, senza modificare D0, aggiorna i flag)
-    CMP.W D0, D1    * Confronta D1 con D0 (D1 - D0, aggiorna solo i flag)
-    CMP.L (A0), D0  * Confronta D0 con il valore in memoria puntato da A0
-
-    CMPI #10, D0    * Confronto immediato con D0 (D0 - 10, aggiorna solo i flag)
-
-    CMPA.L #1000, A0  * Confronta registro indirizzo A0 con 1000
+    CMP #5,D0       * Confronta D0 con 5 (D0 - 5, senza 
+                    * modificare D0, aggiorna i flag)
+    CMP.W D0,D1     * Confronta D1 con D0 (D1 - D0, 
+                    * aggiorna solo i flag)
+    CMP.L (A0),D0   * Confronta D0 con il valore in 
+                    * memoria puntato da A0
+    CMPI #10,D0     * Confronto immediato con D0
+                    * (D0 - 10, aggiorna solo i flag)
+    CMPA.L #1000,A0 * Confronta registro indirizzo A0 con 1000
 \end{lstlisting}
 
 Oltre a semplici comparazioni, solitamente, vi sono anche dei comandi che operano sui singoli registri. Non solo per il controllo di tali registri ma anche per l'effettuazione di eventuali operazioni che possono essere comode per una tipologia di interpretazione ad alto livello del codice
 \begin{lstlisting}
-    TST D0          * Testa D0 (controlla se e' zero o negativo, senza modificarlo)
+    TST D0          * Testa D0 (controlla se e' zero o negativo, 
+                    * senza modificarlo)
     TST.W (A0)      * Testa il valore in memoria puntato da A0
-
-    BTST #3, D0     * Testa il bit 3 di D0 (imposta Z se il bit e' 0)
+    BTST #3, D0     * Testa il bit 3 di D0 
+                    * (imposta Z se il bit e' 0)
     BTST #5, (A0)   * Testa il bit 5 della memoria puntata da A0
-
     BSET #3, D0     * Imposta il bit 3 di D0 a 1
     BSET #5, (A0)   * Imposta il bit 5 della memoria puntata da A0
-
     BCLR #3, D0     * Azzera il bit 3 di D0
-    BCLR #5, (A0)   * Azzera il bit 5 della memoria puntata da A0
-
+    BCLR #5, (A0)   * Azzera il bit 5 del registro puntato da A0
     BCHG #3, D0     * Inverte il bit 3 di D0 (0 -> 1, 1 -> 0)
-    BCHG #5, (A0)   * Inverte il bit 5 della memoria puntata da A0
-
+    BCHG #5, (A0)   * Inverte il bit 5 del registro puntato da A0
     TAS D0          * Testa e imposta il bit piu' alto (7) di D0
-    TAS (A0)        * Testa e imposta il bit 7 del valore in memoria puntato da A0
+    TAS (A0)        * Testa e imposta il bit 7 del valore in 
+                    * memoria puntato da A0
 \end{lstlisting}
 
 \subsection{Strutture sintattiche fondamentali}
@@ -313,51 +317,44 @@ Per costruire il ciclo if-then-else bisogna per prima cosa comprendere quale sia
     \item \textbf{Condizione}: Qual'è la condizione da rispettare?
 \end{itemize}
 
-Scelti questi due parametri allora sarò capace di capire quale codice cmp utilizzare ed in che modo, e quale tipologia di salto condizionato andare ad effettuare (cerca un uguaglianza a 0, una maggiorazione, una minorazione, cosa sto cercando? quale operazione?)
-
-Esempio di un classico If-then:
+Scelti questi due parametri allora sarò capace di capire quale codice cmp utilizzare ed in che modo, e quale tipologia di salto condizionato effettuare.
+Esempio di un classico If-Then:
 \begin{lstlisting}
-                MOVE.L  D0, D1       * Carica valori nei registri (supponiamo che D0 e D1 abbiano gia' valori)
-                CMP.L   D1, D0       * Confronta D0 con D1 (D0 - D1)
-                BGT     END_IF   * Se D0 > D1, salta al blocco then (condizione = (D1 <= D0))
-THEN:           * Codice interno all'IF
-
-END_IF:         * Codice successivo...
+        MOVE.L  D0, D1  * Carica valori nei registri 
+                        * (supponiamo che D0 e D1 abbiano   gia' valori)
+        CMP.L   D1, D0  * Confronta D0 con D1 (D0 - D1)
+        BGT     END_IF  * Se D0 > D1, salta al blocco then 
+                        * (condizione = (D1 <= D0))
+THEN                    * Codice interno all'IF
+END_IF                  * Codice successivo...
 \end{lstlisting}
 
-Esempio di un If-Then-else
+Esempio di un If-Then-Else
 \begin{lstlisting}
-                MOVE.L  D0, D1       * Carica valori nei registri (supponiamo che D0 e D1 abbiano gia' valori)
-                CMP.L   D1, D0       * Confronta D0 con D1 (D0 - D1)
-                BGT     THEN_BLOCK   * Se D0 > D1, salta al blocco THEN
-
-                * ELSE block
-                MOVE.L  #0, D2       * D2 = 0
-                BRA     END_IF       * Salta oltre il blocco THEN per evitare di eseguirlo
-
-THEN_BLOCK:     MOVE.L  #1, D2       * D2 = 1
-
-END_IF:         * Codice successivo...
+        MOVE.L  D0, D1  * Carica valori nei registri (supponiamo che D0 
+                        * e D1 abbiano   gia' valori)
+        CMP.L   D1, D0  * Confronta D0 con D1 (D0 - D1)
+        BGT     THEN    * Se D0 > D1, salta al blocco THEN
+ELSE    MOVE.L  #0, D2  * D2 = 0
+        BRA     END_IF  * Salta oltre il blocco THEN 
+THEN    MOVE.L  #1, D2  * D2 = 1
+END                     * Codice successivo...
 \end{lstlisting}
 
-Come possiamo notare dal codice dell'If-then-else, abbiamo un insieme di salti sia condizionati che non condizionati che sono pilotati da una specifica istruzione di compare
 
 \subsubsection{Ciclo FOR}
 Come per l'if il ciclo for è composto principalmente da codici di \textbf{salto} e da codici di \textbf{confronto}. La struttura è molto simile a quella dell'If-Then-Else con l'eccezzione della posizione dei vari salti.
 Precisamente la struttura di un ciclo for è la seguente:
 \begin{lstlisting}
-                MOVE.L  #0, D0         * Inizializza il contatore D0 = 0
+    MOVE.L  #0, D0  * Inizializza il contatore D0 = 0
 
-FOR_LOOP:       CMP.L   #10, D0        * Confronta D0 con 10
-                BGE     FOR_END        * Se D0 >= 10, esce dal ciclo
+FOR CMP.L   #10, D0 * Confronta D0 con 10
+    BGE     END     * Se D0 >= 10, esce dal ciclo
 
-                * Corpo del ciclo
-                NOP                    * Istruzione di esempio (da sostituire con il codice reale)
-
-                ADDQ.L  #1, D0         * Incrementa D0 di 1
-                BRA     FOR_LOOP       * Ripete il ciclo
-
-FOR_END:        * Codice successivo dopo il ciclo
+                    * Corpo del ciclo ...
+    ADDQ.L  #1, D0  * Incrementa D0 di 1
+    BRA     FOR     * Ripete il ciclo
+END                 
 
 \end{lstlisting}
 
@@ -365,16 +362,12 @@ FOR_END:        * Codice successivo dopo il ciclo
 
 Il ciclo while segue le regole del ciclo for solo con una condizione differente:
 \begin{lstlisting}
-WHILE_LOOP:     CMP.L   #0, D1        * Confronta D1 con 0
-                BLE     WHILE_END     * Se D1 <= 0, esce dal ciclo
-
-                * Corpo del ciclo
-                NOP                   * Istruzione di esempio
-
-                SUBQ.L  #1, D1        * Decrementa D1 di 1
-                BRA     WHILE_LOOP    * Ripete il ciclo
-
-WHILE_END:     * Codice successivo dopo il ciclo
+WHILE   CMP.L   #0, D1  * Confronta D1 con 0
+        BLE     END     * Se D1 <= 0, esce dal ciclo
+                        * Corpo del ciclo
+        SUBQ.L  #1, D1  * Decrementa D1 di 1
+        BRA     WHILE   * Ripete il ciclo
+END                     * Codice successivo
 \end{lstlisting}
 
 
@@ -388,75 +381,34 @@ Le chiamate a subroutine possono essere viste come una sorta di chiamate a funzi
 
 Un esempio di chiamata a subroutine con memorizzazione degli operandi nello stack è il seguente:
 \begin{lstlisting}
-            MOVE.L  #5, D0        * Carica il primo operando in D0
-            MOVE.L  #10, D1       * Carica il secondo operando in D1
-
-            MOVE.L  D0, -(A7)     * Push del primo operando nello stack
-            MOVE.L  D1, -(A7)     * Push del secondo operando nello stack
-
-            JSR     SUM_SUB       * Chiamata alla subroutine
-
-            MOVE.L  (A7)+, D2     * Il chiamante preleva il risultato dallo stack
-
-            ADDQ.L  #8, A7        * Pulizia dello stack (2 valori da 4 byte)
-
-            * D2 ora contiene il risultato della somma
-
-            * Codice successivo...
-
-SUM_SUB:    MOVE.L  (A7)+, D0     * Pop del primo operando dallo stack
-            MOVE.L  (A7)+, D1     * Pop del secondo operando dallo stack
-
-            ADD.L   D1, D0        * Somma D0 + D1, risultato in D0
-
-            MOVE.L  D0, -(A7)     * Push del risultato nello stack
-
-            RTS                   * Ritorna al chiamante
+        MOVE.L  #5, D0      * Carica il primo operando in D0
+        MOVE.L  #10, D1     * Carica il secondo operando in D1
+        MOVE.L  D0, -(A7)   * Push del primo operando nello stack
+        MOVE.L  D1, -(A7)   * Push del secondo operando
+        JSR     SUM_SUB     * Chiamata alla subroutine
+        MOVE.L  (A7)+, D2   * prelievlo del risultato dallo stack
+        ADDQ.L  #8, A7      * Pulizia dello stack 
+                            * (2 valori da 4 byte)
+                            * D2 ora contiene il risultato
+                            * Codice successivo eventuale
+SUM_SUB MOVE.L  (A7)+, D0   * Pop del primo operando dallo stack
+        MOVE.L  (A7)+, D1   * Pop del secondo operando
+        ADD.L   D1, D0      * Somma D0 + D1, risultato in D0
+        MOVE.L  D0, -(A7)   * Push del risultato nello stack
+        RTS                 * Ritorna al chiamante
 \end{lstlisting}
 
-Esempio di chiamata a subroutine con operandi nello stack e risultato memorizzato nello stack
-\begin{lstlisting}
-            MOVE.L  #5, D0        * Carica il primo operando in D0
-            MOVE.L  #10, D1       * Carica il secondo operando in D1
-
-            MOVE.L  D0, -(A7)     * Push del primo operando nello stack
-            MOVE.L  D1, -(A7)     * Push del secondo operando nello stack
-
-            JSR     SUM_SUB       * Chiamata alla subroutine
-
-            MOVE.L  (A7)+, D2     * Il chiamante preleva il risultato dallo stack
-
-            ADDQ.L  #8, A7        * Pulizia dello stack (2 valori da 4 byte)
-
-            * D2 ora contiene il risultato della somma
-
-            * Codice successivo...
-
-SUM_SUB:    MOVE.L  (A7)+, D0     * Pop del primo operando dallo stack
-            MOVE.L  (A7)+, D1     * Pop del secondo operando dallo stack
-
-            ADD.L   D1, D0        * Somma D0 + D1, risultato in D0
-
-            MOVE.L  D0, -(A7)     * Push del risultato nello stack
-
-            RTS                   * Ritorna al chiamante
-\end{lstlisting}
-
-Caso di utilizzo dei registri interni, sia per passaggio operandi di ingresso che di uscita:
+Esempio di utilizzo dei registri interni, sia per passaggio operandi di ingresso che di uscita:
 
 \begin{lstlisting}
-            MOVE.L  #5, D0       * Primo operando in D0
-            MOVE.L  #10, D1      * Secondo operando in D1
+        MOVE.L  #5, D0       * Primo operando in D0
+        MOVE.L  #10, D1      * Secondo operando in D1
 
-            JSR     SUM_REGS     * Chiamata alla subroutine
-
-            * Dopo il ritorno, il risultato e' in D0
-
-            * Codice successivo...
-
-SUM_REGS:   ADD.L   D1, D0       * Somma D0 + D1, risultato in D0
-
-            RTS                  * Ritorna al chiamante
+        JSR     SUM_REGS     * Chiamata alla subroutine
+        * Dopo il ritorno, il risultato e' in D0
+        * Codice successivo...
+SUM_REGS:   ADD.L   D1, D0   * Somma D0 + D1, risultato in D0
+        RTS                  * Ritorna al chiamante
 
 \end{lstlisting}
 
