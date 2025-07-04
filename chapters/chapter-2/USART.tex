@@ -1,43 +1,42 @@
-\newpage
 \section{USART}
 
-L'USART (Universal Synchronous-Asyncronous Receiver-Transmitter) è un interfaccia di comunicazione seriale. In generale i sistemi di comunicazione seriale utilizzano solo 1 filo per comunicare (Tx -> Rx), che permette il collegamento tra il trasmittente ed il ricevente, a questo singolo collegamento, solitamente, si aggiungono altri fili, che aggiungono: controlli di flusso, segnali di tempificazione ecc.
+L'USART (Universal Synchronous-Asyncronous Receiver-Transmitter) è un interfaccia di comunicazione seriale. In generale i sistemi di comunicazione seriale utilizzano solo un filo per comunicare (Tx $\rightarrow$ Rx), che permette il collegamento tra il trasmittente ed il ricevente; a questo singolo collegamento, solitamente, si aggiungono altri fili, che aggiungono: controlli di flusso, segnali di tempificazione ecc.
 Non si scende troppo nei dettagli di tali architetture, poichè poi si vanno a specializzare nei vari dispositivi che vengono prodotti, un esempio sarà l'Intel 8251.
 
 \subsection{Comunicazioni Sincrona ed Asincrona}
-Come detto nel precedente paragrafo, l'USART (a differenza del suo predecessore, l'UART), prevede sia una modalità di funzionamento \textbf{sincrona} che \textbf{asincrona}
+Come detto nell'introduzione, l'USART (a differenza del suo predecessore, l'UART), prevede sia una modalità di funzionamento \textbf{sincrona} che \textbf{asincrona}.
 Tali modalità sono profondamente diverse, sia per quanto riguarda l'architettura sia per quanto riguarda il loro modo di comunicazione dei dati.
 
 \subsubsection{Comunicazione Sincrona}
-Nel caso della comunicazione di tipo Sincrona, i due dispositivi (per una comunicazione unidirezionale) condividono 2 collegamenti:
+Nel caso della comunicazione sincrona, i due dispositivi (per una comunicazione unidirezionale) condividono 2 collegamenti:
 \begin{itemize}
-    \item Tx -> Rx
-    \item clk\_t -> clk\_r
+    \item Tx $\rightarrow$ Rx
+    \item clk\_t $\rightarrow$ clk\_r
 \end{itemize}
 
 Questo perchè una comunicazione sincrona sfrutta un segnale di tempificazione comune. La velocità di trasmissione dei dati è quindi dettata dalla frequenza del clock comune. A differenza della comunicazione \textbf{asincrona}, la comunicazione sincrona è molto più veloce e robusta (data la sincronizzazione in hardware tramite il clock condiviso), ma è molto difficile da implementare a livello hardware, poichè bisogna sincronizzare in maniera molto precisa dati e trasmissione di essi.
 
 \subsubsection{Comunicazione Asincrona}
-Nel caso della comunicazione di tipo Asincrona, i due dispositivi richiedono un singolo collegamento (sempre ragionando sul singolo canale trasmissivo Tx -> Rx).
+Nel caso della comunicazione di tipo Asincrona, i due dispositivi richiedono un singolo collegamento (sempre ragionando sul singolo canale trasmissivo Tx $\rightarrow$ Rx).
 L'invio dei dati è gestito da due bit di start e stop che vanno a scandire, precisamente, l'inizio dell'invio del messaggio e la fine del messaggio.
-La tipologia di comunicazione, rispetto alla \textbf{Sincrona} risulta meno efficiente rispetto al trasporto di informazioni, anche se conserva il vantaggio per il rispetto dell'asincronicità intrinseca dei dati, e quindi ottimizza meglio i tempi di invio dei dati (non deve aspettare un fronte del clock condiviso come nel caso della comunicazione sincrona).
-Nel caso \textbf{Asincrono}, negli anni 60, è stato definito uno standard di comunicazione, ovvero l'\textbf{RS-232}, uno standard che definisce in che modo le varie interfacce possono comunicare tra di loro, tale standard predispone varie altri tipologie di collegamenti che sono utilizzate per il controllo di flusso dei vari dati. Tale standard fu creato per permettere la comunicazione tra un dispositivo DCE (Data Communication Equipment) ed un dispositivo DTE (Data Trasmission Equipment), tali dispositivi potevano essere tutto, originariamente erano un calcolatore ed il suo modem. Precisamente, i pin che sono presentati ed utilizzati nello standard sono:
+La tipologia di comunicazione, rispetto alla \textbf{sincrona} risulta meno efficiente rispetto al trasporto di informazioni, anche se conserva il vantaggio per il rispetto dell'asincronicità intrinseca dei dati, e quindi ottimizza meglio i tempi di invio dei dati (non deve aspettare un fronte del clock condiviso come nel caso della comunicazione sincrona).
+Nel caso \textbf{asincrono}, negli anni 60, è stato definito uno standard di comunicazione, ovvero l'\textbf{RS-232}, che definisce in che modo le varie interfacce possano comunicare tra di loro: tale standard predispone varie altre tipologie di collegamenti che sono utilizzate per il controllo di flusso dei vari dati. Tale standard fu creato per permettere la comunicazione tra un dispositivo DCE (Data Communication Equipment) ed un dispositivo DTE (Data Trasmission Equipment), tali dispositivi potevano essere di vario tipo, per esempio originariamente erano un calcolatore ed il suo modem. Precisamente, i pin che sono presentati ed utilizzati nello standard sono:
 
 \begin{itemize}
-    \item \textbf{RD}: Sarabbe il pin di ricezione di dati seriali
-    \item \textbf{TD}: Sarebbe il pin di trasmissione di dati seriali
-    \item \textbf{DCD}: Data Carrier Detect, è un pin che viene utilizzato per controllare il corretto collegamento tra i due dispositivi (controllo del funzionamento corretto del dispositivo e delle portanti utilizzate)
-    \item \textbf{GND}: Ground, è un pin che collega la massa dei sue dispositivi in modo da poter trasmettere il segnale senza intoppi di tipo elettrico
-    \item \textbf{DTR}: Data Terminal Ready, indica il segnale di uscita per poter finire/iniziare una fase di handshacking (ACK o SYN)
-    \item \textbf{DSR}: Data Set Ready, indica il segnale di ingresso che viene inviato dal ricevente (o per indicare un ACK o un SYN)
-    \item \textbf{RTS}: Request to send, segnale di uscita per il controllo del flusso
-    \item \textbf{CTS}: Clear To Send, sengale di ingresso per il controllo di flusso
-    \item \textbf{RI}: Ring Indicator, Indica che il trasmittente sta "chiamando", solitamente tale pin va a scatenare una interruzione per poter far gestire la comunicazione
+    \item \textbf{RD}: Pin di ricezione di dati seriali;
+    \item \textbf{TD}: Pin di trasmissione di dati seriali;
+    \item \textbf{DCD}: Data Carrier Detect, è un pin che viene utilizzato per controllare il corretto collegamento tra i due dispositivi (controllo del funzionamento corretto del dispositivo e delle portanti utilizzate);
+    \item \textbf{GND}: Ground, è un pin che collega la massa dei due dispositivi;
+    \item \textbf{DTR}: Data Terminal Ready, indica il segnale di uscita per poter iniziare o terminare una fase di handshacking (ACK o SYN);
+    \item \textbf{DSR}: Data Set Ready, indica il segnale di ingresso che viene inviato dal ricevente (o per indicare un ACK o un SYN);
+    \item \textbf{RTS}: Request to send, segnale di uscita per il controllo del flusso;
+    \item \textbf{CTS}: Clear To Send, sengale di ingresso per il controllo di flusso;
+    \item \textbf{RI}: Ring Indicator, Indica che il trasmittente sta "chiamando", e può scatenare una interruzione per poter gestire la comunicazione.
 \end{itemize}
 I segnali \textbf{DTR} e \textbf{DSR}, sono pin che vanno ad implementare l'handshacking ad un livello molto alto. Mentre \textbf{RTS} e \textbf{CTS}, vengono utilizzati per comprendere quando il trasmittente può effettivamente trasmettere. Per quando sia un pò confusionario il loro funzionamento, immaginando una comunicazione dove dev'essere effettuato l'invio di messaggi, il primo handshacking serve ad identificare il messaggio, mentre il secondo per trasmettere i vari byte e quindi richiedere al ricevitore se è pronto a ricevere o sta ancora processando il dato precedente.
 
 \subsubsection{Errori principali presenti nella comiunicazione seriale}
-Quando si fanno interagire due sistemi mediante una comunicazione di tipo seriale asincrona (UART), in fase di ricezione, si può andare in contro ai seguenti tipi di errori:
+Quando si fanno interagire due sistemi mediante una comunicazione di tipo seriale asincrona (UART), in fase di ricezione, si può andare incontro ai seguenti tipi di errori:
 \begin{itemize}
     \item \textbf{Errore di parità}: Il valore del bit di parità inviato non corrisponde con quello calcolato al ricevitore;
     \item \textbf{Errore di framing}: Non è previsto il bit di stop;
@@ -48,7 +47,7 @@ Tra questi errori l'unico su cui si può attuare un miglioramento è quello di o
 
 \subsection{Intel 8251A}\label{par:intel-8251A}
 L'Intel 8251A è un dispositivo programmabile che permette la comunicazione tra la CPU e una qualunque periferica seriale che utilizza lo standard RS-232. Tale dispositivo riceve i dati da trasmettere in maniera parallela dalla CPU, per poi inviarli in maniera seriale attraverso l'utilizzo del protocollo selezionato in una prima fase di configurazione (per questo programmabile). 
-La sua struttura principale è quella visualizzabile nella figura [\ref{img:Intel-8251A}]
+La sua struttura principale è quella visualizzabile nella figura [\ref{img:Intel-8251A}].
 
 \begin{figure}[ht]
     \centering
@@ -59,44 +58,40 @@ La sua struttura principale è quella visualizzabile nella figura [\ref{img:Inte
 In tale struttura logica notiamo vari blocchi differenti, ovvero:
 \begin{itemize}
     \item \textbf{Data Bus Buffer}: Buffer in cui vengono conservari i dati (o in ricezione o in trasmissione), in generale la comunicazione con tale blocco avviene in maniera parallela;
-    \item \textbf{Read/Write Control Logic}: Componente di controllo dell'intero sistema, va a creare un interfaccia di utilizzo degli elementi interni del dispositivo per la CPU. Vedendo meglio il significato dei vari pin:
+    \item \textbf{Read/Write Control Logic}: Blocco di controllo dell'intero sistema, è un' interfaccia di utilizzo degli elementi interni del dispositivo per la CPU. Approfondiamo il significato dei vari pin:
     \begin{itemize}
         \item \textbf{Reset}: Pin che permette alla CPU di resettare tutti i registri interni al dispositivo;
         \item \textbf{Clk}: Segnale di tempificazione per il dispositivo;
-        \item \textbf{C/D}: Selezione per il registro di controllo o di dato
-        \item \textbf{RD e WR}: Segnali che indentificano se si vuole effettuare una lettura o una scrittura
-        \item \textbf{CS}: Chip select, utilizzato per abilitare il dispositivo
+        \item \textbf{C/D}: Selezione per il registro di controllo o di dato;
+        \item \textbf{RD e WR}: Segnali che indentificano se si vuole effettuare una lettura o una scrittura;
+        \item \textbf{CS}: Chip select, utilizzato per abilitare il dispositivo;
     \end{itemize} 
-
-    \item \textbf{Modem Control}: Blocco di collegamento con l'altro dispositivo esterno, difatti contiene i segnali che vengono utilizzati per lo standard RS232
+    \item \textbf{Modem Control}: Blocco di collegamento con l'altro dispositivo esterno, contiene i segnali che vengono utilizzati per lo standard RS232:
     \begin{itemize}
         \item \textbf{DSR (Data Set Ready)}
         \item \textbf{DTR (Data Terminal Ready)}
         \item \textbf{CTS (Clear To Send)}
         \item \textbf{RTS (Ready To Send)}
     \end{itemize}
-
     \item \textbf{Transmit Buffer}: Contiene lo shift register impiegato nella fase di trasmissione. Gli vengono passati i dati da trasmettere in parallelo dal BUS dati e poi li invia sotto forma seriale tramite il segnale \textbf{TXD}. IL controllo sulla trasmissione viene effettuato dall'apposito blocco con cui si condividono sia un segnale di ingresso che di uscita
     
     \item \textbf{Transmit Control}: Il blocco di trasmit control viene gestito da vari segnali processati, in base alle richieste della CPU. I suoi segnali di interazione con l'esterno, sono:
     \begin{itemize}
-        \item \textbf{TXRDY (Transmitter ReaDY)}: Segnale di utilizzato per segnalare alla CPU che il trasmettitore è pronto a ricevere un nuovo dato
-        \item \textbf{TXE (Transmitter Empty)}: Segnale di uscita per identificare che il buffer di trasmissione può essere sovrascritto (Attesa del nuovo dato)
-        \item \textbf{TXC (Transmitter Clock)}: Utilizzato nel caso sincrono per gestire il segnale di clock condiviso
+        \item \textbf{TXRDY (Transmitter ReaDY)}: Segnale di utilizzato per segnalare alla CPU che il trasmettitore è pronto a ricevere dalla CPU un nuovo dato da trasmettere;
+        \item \textbf{TXE (Transmitter Empty)}: Segnale di uscita per identificare che il buffer di trasmissione può essere sovrascritto (Attesa del nuovo dato da trasmettere);
+        \item \textbf{TXC (Transmitter Clock)}: Utilizzato nel caso sincrono per gestire il segnale di clock condiviso;
     \end{itemize}
-    
-    \item \textbf{Receive Buffer}: Il blocco di receive buffer, svolge il compito contrario del trasmit buffer, ovvero, converte i dati seriali in registro parallelo e li invia sul bus dati. Esso riceve i dati tramite il segnale esterno RXD. Oltre a tale segnale ne ha altri che ne fanno il controllo e la gestione della comunicazione
-    
-    \item \textbf{Receive Control}: Il blocco di receive control, come il blocco di transmit control, gestite il sistema di ricezione con l'esterno. Tale gestione viene effettuata secondo i seguenti segnali:
+    \item \textbf{Receive Buffer}: Il blocco di receive buffer, svolge il compito contrario del trasmit buffer, ovvero, converte i dati seriali in registro parallelo e li invia sul bus dati. Questo riceve i dati tramite il segnale esterno RXD. Oltre a tale segnale la ricezione è controllata mediante il blocco Receive Control:
+    \item \textbf{Receive Control}: Il blocco di receive control, come il blocco di transmit control, gestite il sistema di ricezione con l'esterno. Tale gestione viene effettuata attraverso i seguenti segnali:
     \begin{itemize}
-        \item \textbf{RXRDY (Receive Ready)}: Specifica alla CPU che il sistema ricevente ha ricevuto un dato che è pronto per essere letto
-        \item \textbf{RXC (Receive Clock)}: Segnale utilizzato in ingresso per il clock delle comunicazioni sincrone
-        \item \textbf{SYNDER/BD (Synchronous Detect/Break Detect)}: Segnale utilizzato per, nel caso di comunicazioni sincrone, ricevere i caratteri di sincronismo, mentre nella modalità sincrona segnala la rilevazione di una congizione di breack
+        \item \textbf{RXRDY (Receive Ready)}: Specifica alla CPU che il sistema ricevente ha ricevuto un dato che è pronto per essere letto;
+        \item \textbf{RXC (Receive Clock)}: Segnale utilizzato in ingresso per il clock delle comunicazioni sincrone;
+        \item \textbf{SYNDER/BD (Synchronous Detect/Break Detect)}: Segnale utilizzato per ricevere i caratteri di sincronismo, nel caso di comunicazione asincrona, mentre nella modalità sincrona segnala la rilevazione di una condizione di break.
     \end{itemize}
 \end{itemize}
 
 \subsubsection{Intel-8251A in Asim}
-Come detto in precedenza, l'Intel 8251A è un dispositivo programmabile, quindi richiede di una prima fase di configurazione (tramite il suo registro di modo) e poi il suo utilizzo tramite gli altri registri dell'interfaccia. Nel caso di ASIM il modello di programmazione utilizzato è quello visualizzabile alla figura [\ref{img:prog-8251A}]
+Come detto in precedenza, l'Intel 8251A è un dispositivo programmabile, quindi richiede una prima fase di configurazione (tramite il suo registro di modo) e poi il suo utilizzo tramite gli altri registri dell'interfaccia. Nel caso di ASIM il modello di programmazione utilizzato è quello visualizzabile alla figura [\ref{img:prog-8251A}]
 
 \begin{figure}[ht]
     \centering
@@ -104,15 +99,15 @@ Come detto in precedenza, l'Intel 8251A è un dispositivo programmabile, quindi 
     \caption{Modello di programmazione dell'8251A simulato}\label{img:prog-8251A}
 \end{figure}
 
-Da tale figura dobbiamo discriminare due lati, quello sinistro, che è quello che viene connesso direttamente ai bus (e quindi al processore), mentre quello a destra è di interfacciamento verso l'altro dispositivo USART.
+Da tale figura dobbiamo discriminare due lati, quello sinistro, che è quello che viene connesso direttamente ai bus e quindi al processore, mentre quello a destra è di interfacciamento verso l'altro dispositivo USART.
 Notiamo che i pin sono identici a quelli spiegati nell'architettura generale dell'8251 [\ref{par:intel-8251A}].
-Una volta visto il modello di programmazione, vado ad inserire il componente nella mia architettura simulata, quindi lo vado ad inserire all'interno del file di configurazione (.cfg). In generale, come anche per prove precedenti, tali file vengono passati da terze parti, nel caso si volessero configurare \textit{from scratch} si rimanda al capitolo \ref{par:cfg}.
-I registri con cui ci si va ad interfacciare con il motorola 68K sono:
+Una volta visto il modello di programmazione inserisco l'oggetto all'interno del file di configurazione (.cfg). In generale, come anche per prove precedenti, questi file di configurazione vengono forniti, ma nel caso si volessero creare \textit{from scratch} si rimanda all'appendice \ref{par:cfg}.
+I registri con i quali l'USART simulata si interfaccia con la CPU sono:
 \begin{itemize}
     \item \textbf{Mode}: Regsitro di modo con cui posso configurare il funzionamento della USART, quindi selezionare se la comunicazione sia sincrona o asincrona ed il formato dell'informazione da trasmettere (eventuali bit di parità ecc.);
     \item \textbf{CTRL}: Registro di controllo, che permette di poter pilotare i segnali di utilizzo della USART, utile per quando si devono implementare sistemi che utilizzano handshacking ecc.;
     \item \textbf{SYNCH-1}: Registro di Sincronizzazione, utilizzato nella comunicazione sincrona per prevedere l'arrivo del primo simbolo di sincronizzazione;
-    \item \textbf{SYNCH-2}: Registro di sincronizzazione, utilizzato nella comunicazione sincrona per prevedere l'arrivo dell'eventuale secondo simbolo di informazione (dipende dalla modalità che si è settata);
+    \item \textbf{SYNCH-2}: Registro di sincronizzazione, utilizzato nella comunicazione sincrona per prevedere l'arrivo dell'eventuale secondo simbolo di informazione (dipende dalla modalità che si è settata).
 \end{itemize}
 
 Per accedere a tali registri di gestione del dispositivo si fa riferimento all'indirizzo dispari messo a disposizione all'interno del file di configurazione. In generale, tali registri, non hanno ognuno il suo puntatore, ma condividono lo stesso indirizzo, che, in base alla tipologia di funzionamento e di impostazione ne permette l'accesso. Precisamente, ogni volta che si fa un accesso in scrittura all'indirizzo dispari si segue l'ordine che è mostrato all'interno dell'immagine [\ref{img:accesso-registri}].
@@ -194,4 +189,249 @@ Tali però non sono gli unici registri presenti, poichè sono presenti anche i r
     \caption{Significato dei bit del registro STATUS}\label{tab:STAT-8251}
 \end{table}
     
-  
+\subsection{USART in ASIM}
+In questo paragrafo esporremo e commenteremo alcuni esempi di utilizzo del componente ASIM che simula una USART.
+
+\subsubsection{USART trasmissione $\leftrightarrow$ ricezione asincrona}
+Iniziamo vedendo un esempio di programma che serve a provare una semplice configurazione costituita da due sistemi S1 e S2 dotati di processore MC68K e in comunicazione tra loro mediante USART mappata a \$2004. I due USART sono interconnessi tra loro e consentono ai due sistemi di scambiare un messaggio.
+La configurazione che prendiamo in considerazione durante gli esercizi è di tipo \textit{NULL MODEM} (figura \ref{img:USART_connect}), e prevede che i segnali di handshaking vengano direttamente scambiati tra i terminali senza la presenza di un modem. In questa configurazione RTS serve a comunicare la capacità di ricevere messaggi più che una richiesta di invio. I sistemi verranno inizializzati ponendo DTR,RTS = 1,1 in modo da stabilire l'handshacking in partenza.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.6\textwidth]{img/USART_NOMODEM.png}
+    \caption{Connessione USART in simulazione}
+    \label{img:USART_connect}
+\end{figure}
+
+Il sistema S1 trasferisce un vettore di N caratteri verso il sistema S2 sul canale seriale utilizzando un protocollo asincrono. 
+Il seguente codice è un driver per la programmazione del sistema S1 che effettua il trasferimento con un semplice ciclo, quindi \textbf{senza interruzioni nel sistema di trasmissione}:
+
+\begin{lstlisting}
+***AREA DATI***
+        ORG     $8000
+MSG     DC.B    170,204,153,129,195,6
+DIM     DC.B    6
+COUNT   DC.B    0       * contatore caratteri inviati 
+
+***AREA CODICE*** 
+        ORG     $8200
+USARTD  EQU     $2004   * registro DATO 
+USARTC  EQU     $2005   * registro CTRL 
+
+MAIN    JSR     INIT
+        MOVE.W  SR,D0 
+        ANDI.W  #$D8FF,D0
+        MOVE.W  D0,SR
+
+        MOVEA.L #USARTD,A1 
+        MOVEA.L #USARTC,A2 
+        MOVEA.L #MSG,A0 
+        MOVE.B  DIM,D3 
+        CLR     D1
+        CLR     D2 
+DSR     MOVE    (A2),D0
+        ANDI    #$80,D0
+        BEQ     DSR 
+TxRDY   MOVE    (A2),D0 
+        ANDI    #$01,D0 
+        BEQ     TxRDY 
+INVIO   MOVE    (A0)+,D1
+        MOVE    D1,(A1)
+        ADD     #1,D2 
+        CMP     D2,D3 
+        BNE     TxRDY 
+LOOP    JMP     LOOP 
+
+INIT    MOVE.B  $%01011101,USARTC *MODE 
+        MOVE.BD $%00100011,USARTC *CTRL 
+
+        ORG     $8800 
+        RTE     * interruzione
+
+\end{lstlisting}
+
+Nella porzione di codice etichettata DSR, il programma effettua un test sul regsitro di stato della USART, e controlla che il bit relativo a Data Set Ready (ovvero altro sistema pronto a ricevere dati); questo sarà sempre alto, anche nel prossimo codice, perchè DTR è inizializzato alto nella procedura INIT in entrambi i sistemi, quindi l'handshaking andrà \textit{artificialmente} sempre a buon fine. 
+Il seguente codice invece serve a programmare il sistema S2, che riceve il messaggio sulla seriale utilizzando le interruzioni. Il segnale di interruzione, associato al segnale RxRDY della seriale, è colelgato alla linea a priorità 3 del processore come impostato nel file di configurazione. La routine è dunque mappata sull'autovettore 27.
+
+\begin{lstlisting}
+***AREA DATI*** 
+        ORG     $8200
+MSG     DS.B    6
+DIM     DC.B    6
+COUNT   DC.B    0
+
+***AREA CODICE*** 
+USARTD  EQU     $2004
+USARTC  EQU     $2005 
+
+MAIN    JSR     INIT 
+        MOVE.W  SR,D0 
+        ANDI.W  #$8DFF,D0 
+        MOVE.W  D0,SR 
+        MOVEA.L #USARTC,A2 
+DSR     MOVE    (A2),D0 
+        ANDI    #$80,D0
+        BEQ     DSR 
+LOOP    JMP     LOOP
+
+
+INIT    MOVE    #$5D,USARTC * MODE
+        MOVE    #$36,USARTC * CTRL 
+        RTS 
+
+        ORG     $8700
+INT3    MOVEA.L A1,-(A7)
+        MOVEA.L A0,-(A7)
+        MOVE.L  D0,-(A7)
+
+        MOVEA.L #USARTD,A1 
+        MOVEA.L #MSG,A0 
+        MOVE    COUNT,D0 
+
+        MOVE    (A1),(A0,D0)
+        ADD     #1,D0 
+        MOVE    D0,COUNT
+        
+        MOVE.L  (A7)+,D0 
+        MOVEA.L (A7)+,A0 
+        MOVEA.L (A7)+,A1 
+        RTE 
+\end{lstlisting}
+
+Come si evince dal codice, il sistema S2 al fine di ricevere il dato viene interrotto da un'interruzione scatenata dal segnale RxRDY, che si alza ogni qualvolta viene ricevuto un carattere. Analogamente, è possibile introdurre il meccanismo delle interruzioni anche per quanto riguarda il sistema S1, e far leva sul corrispettivo segnale TxRDY, che si alza ogni volta che un carattere viene inviato corretamente dalla seriale. La routine di servizio è mappata sull' autovettore 28, indirizzo \$70 in ROM. L'indirizzo posto in tale locazione, che costituisce l'entry point della ISR, è \$8800.
+La differenza è che nella programmazione del sistema S1 deve essere effettuato un \textit{primo invio}:
+
+\begin{lstlisting}
+PRIMO   MOVE    (A0),D1
+        MOVE    D1,A1
+        ADD     #1,D2 
+        MOVE    D2,COUNT
+LOOP    JMP     LOOP 
+\end{lstlisting}
+
+Inoltre, deve essere gestita l'interruzione associata a TxRDY:
+
+\begin{lstlisting}
+        ORG     $8800
+INT4    MOVEA.L A1,-(A7)
+        MOVEA.L A0,-(A7)
+        MOVE.L  D0,-(A7)
+        MOVE.L  D1,-(A7)
+
+        MOVEA.L #USARTD,A1 
+        MOVEA.L #MSG,A0 
+        MOVE    COUNT,D0
+        MOVE    DIM,D1 
+
+        CMP     D0,D1 
+        BEQ     FINE 
+INVIO   ADDA.L  D0,A0
+        MOVE.B  (A0),D1 
+        MOVE.B  D1,(A1)
+
+        ADD     #1,D0 
+        MOVE    D0,COUNT 
+FINE    MOVE.L  (A7)+,D1 
+        MOVE.L  (A7)+,D0 
+        MOVEA.L (A7)+,A0 
+        MOVEA.L (A7)+,A1 
+        RTE 
+\end{lstlisting}
+
+\subsubsection{USART trasmissione $\leftrightarrow$ ricezione sincrona}
+La comunicazione sincrona avviene tramite clock, che può essere trasmesso dal Master oppure una base dei tempi comune. In ricezione, è fondamentale che il ricevitore si aspetti di byte si sincronizzazione (SYNC1 ed eventualmente SYNC2). Quando il ricevitore legge questa sequenza, sa che la comunicazione è \textit{agganciata}. come per gli altri casi, presentiamo il codice relativo al sistema S1 trasmettitore: La trasmissione avviene tramite un semplice ciclo.
+
+\begin{lstlisting}
+***AREA DATI***
+        ORG     $8000
+MSG     DC.B    170,204,153,129,195,6
+DIM     DC.B    6
+COUNT   DC.B    0
+
+***AREA CODICE***
+        ORG     $8200
+USARTD  EQU     $2004
+USARTC  EQU     $2005
+
+MAIN    JSR     INIT 
+        MOVE.W  SR,D0
+        ANDI.W  #$D8FF,D0
+        MOVE.W  D0,SR 
+
+        MOVEA.L #USARTD,A1 
+        MOVEA.L #USARTC,A2 
+        MOVEA.L #MSG,A0 
+        MOVE.B  DIM,D3 
+        CLR     D1 
+        CLR     D2 
+DSR     MOVE.B  (A2),D0 
+        ANDI    #$80,D0 
+        BEQ     DSR 
+TxRDY   MOVE.B  (A2),D0 
+        ANDI    #$01,D0 
+        BEQ     TxRDY 
+INVIO   MOVE    (A0)+,D1 
+        MOVE    D1,A1 
+        ADDQ    #1,D2 
+        CMP     D2,D3
+        BNE     TxRDY 
+
+LOOP    JMP     LOOP 
+
+INIT    MOVE.B  $%10001100,USARTC *MODE
+        MOVE.B  #%FF,USARTC       *SYNC1 
+        MOVE.B  #$00100011,USARTC *CTRL 
+        RTS
+
+        ORG     $8800
+        RTE     * ISR...
+
+\end{lstlisting}
+In questo caso il byte di SYNC è 0xFF. Vediamo il codice per quanto riguarda la ricezione:
+
+\begin{lstlisting}
+***AREA DATI*** 
+        ORG     $8200
+MSG     DS.B    6
+DIM     DC.B    6
+COUNT   DC.B    0
+
+***AREA CODICE*** 
+USARTD  EQU     $2004
+USARTC  EQU     $2005 
+
+MAIN    JSR     INIT 
+        MOVE.W  SR,D0 
+        ANDI.W  #$8DFF,D0 
+        MOVE.W  D0,SR 
+        MOVEA.L #USARTC,A2 
+DSR     MOVE    (A2),D0 
+        ANDI    #$80,D0
+        BEQ     DSR 
+LOOP    JMP     LOOP
+
+
+INIT    MOVE    #%10001100,USARTC *MODE
+        MOVE    #%FF,USARTC       *SYNC1 
+        MOVE    #$10100110,USARTC *CTRL 
+        RTS 
+
+        ORG     $8700
+INT3    MOVEA.L A1,-(A7)
+        MOVEA.L A0,-(A7)
+        MOVE.L  D0,-(A7)
+
+        MOVEA.L #USARTD,A1 
+        MOVEA.L #MSG,A0 
+        MOVE    COUNT,D0 
+
+        MOVE    (A1),(A0,D0)
+        ADD     #1,D0 
+        MOVE    D0,COUNT
+        
+        MOVE.L  (A7)+,D0 
+        MOVEA.L (A7)+,A0 
+        MOVEA.L (A7)+,A1 
+        RTE 
+\end{lstlisting}
+L'unica differenza rispetto al caso sincrono è che in questo caso i sistemi devono impostare che la periferica lavora in modalità sincrona, il numero di caratteri di sincronizzazione, e il carattere di sincronizzazione (0xFF).
