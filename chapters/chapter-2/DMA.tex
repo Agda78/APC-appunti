@@ -57,6 +57,7 @@ Per la comunicazione con il processore, i segnali rappresentati hanno il seguent
 \end{itemize}
 
 Dati i due differenti canali, si avranno due periferiche collegate allo stesso dispositivo DMA. La comunicazione può essere effettuata da una sola periferica per volta. Tale decisione è presa secondo un ordine di priorità, per cui il dispositivo collegato ai terminali 0 ha priorità maggiore rispetto a quello collegato ai terminali 1. I segnali che gestiscono le periferiche sono:
+
 \begin{itemize}
     \item \textbf{DREQ0 e DREQ1}: segnali usati dalle periferiche per richiedere l'accesso al BUS tramite cicli DMA;
     \item \textbf{DACK0 e DACK1}: segnali con cui il DMA comunica alla periferica la disponibilità a soddisfare la richiesta.
@@ -72,6 +73,7 @@ Dati i due differenti canali, si avranno due periferiche collegate allo stesso d
 Consideriamo il canale 0 del DMA, ed analizziamo il modello di programmazione.
 Il registro CADDR0 (Current Adress) contiene l'indirizzo della locazione di memoria interessata dal trasferimento, ed è accessibile in lettura e scrittura all'indirizzo relativo \$0. Il registro BADDR0 (Base Address) contiene l'indirizzo iniziale di CADDR0, ed è accessibile in scrittura automaticamente insieme a CADDR0. 
 Il registro CCOUNT0 (Current Count) contiene il numero attuale di byte da trasferire, ed è accessibile in lettura e scrittura all'indirizzo relativo \$1. Il registro BCOUNT0 (Base Count) contiene il numero di byte iniziale da trasferire, ed è accessibile in scrittura automaticamente insieme a CCOUNT0. Il registro MODE0 contiene informazioni sul modo di funzionamento del canale 0, ed è accessibile in scrittura all'indirizzo relativo \$B. Il Control Register è unico, e i suoi 8 bit sono suddivisi nei 4 meno significativi che indicano lo stato del componente, mentre i 4 più significativi sono bit di controllo. \uppercase{è} accessibile sia in scrittura che in lettura all'indirizzo relativo \$8.
+All'indirizzo relativo \$9 è accessibile in sola scrittura il flag RF (REQUEST FLAG), che è il flag dove segnalare una richiesta da software al DMA per un trasferimento, ed è del tutto analogo di una richiesta da periferica tramite segnali appositi; la selezione del canale avviene sul bit meno significativo del dato scritto nel registro (*******0 per il canale 0, *******1 per il canale 1) mentre il valore che si vuole assegnare al flag deve essere scritto sul quarto bit del dato (\%00001000 $\rightarrow$ \$08 $\rightarrow$ RF alto sul canale 0). MF Mask Flag, accessibile in sola scrittura all'indirizzo relativo \$A, serve a mascherare con il valore alto le richieste dei rispettivi canali.  
 
 
 \subsection{Utilizzo effettivo in ASIM}
@@ -287,3 +289,43 @@ DVAIN   MOVE    #0,PIACA
 \end{lstlisting}
 
 \subsubsection{Caso Memoria $\rightarrow$ Dispositivo}
+In questo caso, un dispositivo  deve trasmettere un messaggio da un'area di memoria verso una PIA usando il DMA. La PIA deve essere programmata per ricevere dati, quindi il porto va configurato in INPUT. Nell'esempio presentato a lezione, non si affronta la questione del trasferimento da PIA del sistema S1 a PIA del sistema S2, quindi il programma non funziona ed è presentato al solo scopo didattico di illustrare il passaggio da Memoria e Interfaccia dispositivo tramite DMA. 
+
+\begin{lstlisting}
+***AREA COSTANTI***
+PIADA   EQU     $2004
+PIACA   EQU     $2005
+
+dma     EQU     $2010
+caddr0  EQU     0
+ccount0 EQU     1
+cntrol  EQU     8
+request EQU     9
+mode0   EQU     11
+nbyte   EQU     6
+
+***AREA DATI*** 
+        ORG     $8000
+MSG     DC.B    1,2,3,4,5,6
+DIM     DC.B    6
+
+***AREA CODICE***
+MAIN    JSR     PIAINIT
+        MOVE.W  SR,D0 
+        ANDI.W  #$D8FF,D0
+        MOVE.W  D0,SR 
+
+        MOVE.W  #dma,A1 
+        MOVE.W  #nbyte,ccount0(A1)
+        MOVE.W  #msg,caddr0(A1)
+        MOVE    #$10000000,mode0(A1)
+        MOVE    #$08,request(A1)
+
+LOOP    JMP     LOOP 
+
+PIAINIT MOVE    #0,PIACA 
+        MOVE    #$00,PIADA 
+        MOVE    #%00100100,PIACA 
+        RTS 
+
+\end{lstlisting}
