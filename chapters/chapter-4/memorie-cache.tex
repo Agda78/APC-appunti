@@ -34,13 +34,14 @@ Notiamo come l'aggiunta di un DMA potrebbe complicare il progetto del sistema a 
 Come possiamo immaginare, più la cache è vicina al processore e minore saranno i tempi di propagazione dei chip (maggiore velocità). Tuttavia, questo ha una limitazione in termini di dimensione della cache, in quanto più vicina questa sarà alla CPU, minore dovrà essere lo spazio occupato. Per questo motivo, nei sistemi moderni si utilizzano cache di diversi livelli e che lavorano nella maggior parte dei casi in Write Back. Inoltre, è molto probabile che le cache a bordo (vicine al processore) si trovino su processori di tipo RISC.
 
 \subsection{Set Associative}
+\label{chap:set-ass}
 Una delle scelte più difficili riguardo l'architettura delle memorie cache riguarda la dimensione dei blocchi. Ad esempio, se il programma in esecuzione è molto locale, allora avere pochi blocchi molto grandi è sicuramente conveniente, mentre se il programma è poco locale la cosa migliore è avere molti blocchi piccoli. Osserviamo anche che maggiore è la dimensione dei blocchi, maggiore è la quantità di dati da trasferire in caso di cache miss, dunque idealmente vorremmo tanti blocchi piccoli per velocizzare gli spostamenti. Tuttavia, avere un numero elevato di blocchi porta fondamentalmente a due complicazioni:
 \begin{enumerate}
     \item Il numero di comparatori necessari per la verifica della chiave cresce.
     \item Avere un elevato numero di chiavi porta al problema di inefficienza introdotto prima (spreco troppo spazio per memorizzare le chiavi).
 \end{enumerate}
 
-\MakeUppercase{è} fondamentale trovare dunque un giusto compromesso, cosa possibile complicando leggermente l'architettura delle memorie cache vista in precedenza e introducendone una di tipo \textbf{Set Associative}. Tale architettura può essere immaginata come una via di mezzo tra cache diretta (semplice ma rigida) e completamente associativa (flessibile ma costosa). Questa volta, la cache viene suddivisa in più set, ognuno dei quali contiene molteplici blocchi. Un dato può essere memorizzato in qualsiasi blocco del set, ma la ricerca avviene soltanto nel set giusto e non in tutta la memoria come avviene in quelle completamente associative. Per poter realizzare questo funzionamento, l'indirizzo fornito dal processore deve ora essere scomposto in tre parti: la prima identifica la chiave del blocco, la seconda il set in cui cercare e la terza l'offset rispetto al blocco [\ref{fig:indirizzo-setass}]. 
+\MakeUppercase{è} fondamentale trovare dunque un giusto compromesso, cosa possibile complicando leggermente l'architettura delle memorie cache vista in precedenza e introducendone una di tipo \textbf{Set Associative}. Tale architettura può essere immaginata come una via di mezzo tra cache diretta (semplice ma rigida) e completamente associativa (flessibile ma costosa). Questa volta, la cache viene suddivisa in più set, ognuno dei quali contiene molteplici blocchi. Un dato può essere memorizzato in qualsiasi blocco del set, ma la ricerca avviene soltanto nel set giusto e non in tutta la memoria come avviene in quelle completamente associative. Per poter realizzare questo funzionamento, l'indirizzo fornito dal processore deve ora essere scomposto in tre parti: la prima identifica la chiave del blocco, la seconda il set in cui cercare e la terza l'offset rispetto al blocco [\ref{fig:indirizzo-setass}]. In una tale architettura si definisce \textit{grado di associatività} il numero di blocchi per set, una cache 4-way usa 4 blocchi per ciascun set.
 
 \begin{figure}[!h]
     \centering
@@ -63,6 +64,18 @@ All'inizio del capitolo è stato affermato che un'architettura Set Associative c
     \item Nel caso set-associativo, parte dell'indirizzo viene utilizzata per selezionare il set: supponendo di avere \(2^s\) set, la lunghezza del campo chiave si riduce a K=N-S-D.
 \end{enumerate}
 Ne consegue che l'organizzazione Set Associative richiede meno bit per ogni tag, e, poiché la ricerca viene effettuata solo sui blocchi appartenenti al set selezionato, sono necessari meno comparatori rispetto all'organizzazione Full Associative, dove il confronto deve avvenire con tutti i blocchi della cache.
+\\
+\\
+Consideriamo un esempio numerico su come si calcolano i bit necessari per ciascun campo di un indirizzo a 32 bit in una cache set-associativa 4-way. Innanzitutto definiamo una dimensione della cache, un valore comune è 16 KB = 16384 B con blocchi da 64 B, a partire dal quale:
+\[numBlocchi = \frac{dimCache}{dimBlocco} = \frac{16384}{64}=256\]
+\[numSet = \frac{numBlocchi}{gradAssociativita} = \frac{256}{4}=64\]
+Per ottenere il numero di bit necessari a codificare l'offset del blocco basta fare il logaritmo in base 2 della dimensione di un blocco ($log_2(64)=6$), mentre per il set basta farlo per il numero di set trovato. Il campo chiave si ottiene come differenza tra i 32 bit disponibili e la somma degli altri due campi. 
+\\
+\\
+\textit{Nota importante}: Il professore potrebbe chiedere di calcolare la dimensione di ciascun campo stabilendo delle dimensioni iniziali diverse, ad esempio assegnando un grado di associatività e un fissato numero di blocchi. In tal caso, il procedimento di calcolo potrebbe variare leggermente.
+\\
+\\
+Oltre al full e set associative, citiamo anche il \textit{mapping diretto}, il quale richiede che un blocco di dati presenti in memoria principali si trovi alla stessa posizione nella cache. La traduzione si realizza attraverso una funzione modulo.
 
 \subsection{Dimensionamento}
 Dimensionare un sistema significa determinare le sue caratteristiche fisiche sulla base dell'architettura studiata. Consideriamo, in particolare, il \textbf{dimensionamento di una memoria cache}. In questo contesto, è necessario definire tre parametri fondamentali: il numero di blocchi (\(k\)), il numero di settori (\(s\)) e la lunghezza di ciascun blocco (\(L\)). La dimensione complessiva della cache si ottiene come prodotto di questi fattori, \(dim=ksL\). È utile osservare che il dimensionamento della memoria virtuale, tema di maggiore interesse nei nostri studi, può essere interpretato come un caso particolare del dimensionamento della cache, data la somiglianza strutturale tra le due tipologie di memoria.
