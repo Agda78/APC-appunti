@@ -184,7 +184,7 @@ Una \textbf{macchina virtuale} è un ambiente di elaborazione completo con capac
 \begin{itemize}
     \item \textbf{Macchine virtuali basate sul linguaggio}, come \textit{Java Virtual Machine}.
     \item \textbf{Macchine virtuali leggere}, che si basano su una combinazione di meccanismi di
-    isolamento hardware e software per garantire che le applicazioni in esecuzione direttamente sul processore siano isolate in modo sicuro da altre e dal sistema operativo sottostante.
+    isolamento hardware e software per garantire che le applicazioni in esecuzione direttamente sul processore siano isolate in modo sicuro da altre e dal sistema operativo sottostante. Un esempio sono i \textit{container}.
     \item \textbf{Macchine virtuali a livello di sistema}, in cui viene emulato l'intero hardware di un calcolatore, permettendo di installare un sistema operativo intero. Le piattaforme che permettono di eseguire questa tipologia di macchine virtuali sono:
     \begin{itemize}
         \item \textit{Hypervisor}: Si basa sull'esecuzione diretta sulla CPU per la massima efficienza.
@@ -193,7 +193,7 @@ Una \textbf{macchina virtuale} è un ambiente di elaborazione completo con capac
 \end{itemize}
 
 \subsection{Hypervisor}
-Un \textbf{hypervisor} (o Virtual Machine Monitor - VMM) è un software di sistema che permette di creare ed eseguire macchine virtuali, con l'obiettivo di ridurre al minimo i costi di esecuzione. Quando più macchine virtuali coesistono simultaneamente sullo stesso sistema di computer, l’hypervisor multiplexa (cioè alloca e
+Un \textbf{hypervisor} (o Virtual Machine Monitor - VMM) è un software di sistema che permette di creare ed eseguire macchine virtuali, con l'obiettivo di ridurre al minimo i costi di esecuzione. Quando più VM coesistono simultaneamente sullo stesso sistema di computer, l’hypervisor multiplexa (cioè alloca e
 schedula) le risorse fisiche in modo appropriato tra le macchine virtuali. Le architetture dell’hypervisor possono essere classificate come segue [\ref{fig:hyper-type}].
 \begin{itemize}
     \item \textbf{Tipo 1 (bare-metal)}: Il VMM viene eseguito direttamente sull'hardware macchina host (bare), senza necessità di un sistema operativo.
@@ -215,9 +215,7 @@ risorse e creazione dell'ambiente per la macchina virtuale sono eseguiti dal sis
 Osserviamo come l'enfasi sulla differenza tra i due sia sull'allocazione delle risorse e non sul fatto che l’hypervisor venga eseguito in modalità privilegiata o meno. In particolare, un hypervisor può essere di tipo 2 anche quando viene eseguito in modalità kernel, ad esempio \textit{VMware Workstation} funziona in questo modo.
 \\
 \\
-Nella sua forma più elementare, un hypervisor utilizza due delle tre tecniche di virtualizzazione multiplexa (nello spazio e possibilmente nel tempo) il processore fisico attraverso le
-macchine virtuali ed emula tutto il resto, in particolare l’I/O bus e i dispositivi I/O. Questa
-combinazione di tecniche `e necessaria e sufficiente nella pratica per raggiungere i criteri
+Nella sua forma più elementare, un hypervisor utilizza due delle tre tecniche di virtualizzazione: multiplexa (nello spazio e possibilmente nel tempo) il processore fisico ed emula tutto il resto, in particolare i dispositivi I/O. Questa combinazione di tecniche è necessaria e sufficiente nella pratica per raggiungere i criteri
 di efficienza. Il motivo è che se non si multiplexa bene la CPU e la MMU (Memory Management Unit), l’hypervisor sarebbe costretto a simulare tutto, rendendo le VM molto lente.
 \\
 \\
@@ -236,7 +234,7 @@ Osserviamo con qualche dettaglio in più il processo della \textit{trap and emul
 \begin{enumerate}
     \item Il sistema operativo guest esegue codice normalmente sul processore reale.
     \item Il processore incontra un'istruzione privilegiata, come un cambio di modalità di esecuzione (da utente a root).
-    \item Il processore blocca l’istruzione e genera una \textit{trap}. Il controllo passa quindi supervisore (che gira a un livello più alto, o con più privilegi, del guest).
+    \item Il processore blocca l’istruzione e genera una \textit{trap}. Il controllo passa quindi al supervisore (che gira a un livello più alto, o con più privilegi, del guest).
     \item L’hypervisor simula via software il comportamento dell’istruzione.
     \item Dopo l’emulazione, l’esecuzione torna al sistema operativo guest.
 \end{enumerate}
@@ -282,10 +280,18 @@ Il cambio di modalità operativa avviene in automatico se la VM in modalità non
 Con una tale gestione della virtualizzazione, il flusso di esecuzione delle macchine virtuali può procedere normalmente: non è richiesta alcuna re-implementazione delle primitive del guest-os. In caso di istruzioni privilegiate, viene avviata una VM Exit che permette di procedere emulando l'istruzione [\ref{fig:vm_flusso}].
 \begin{figure}[!h]
 	\centering
-	\includegraphics[width=0.5\linewidth]{img/vm-flusso}
+	\includegraphics[width=0.45\linewidth]{img/vm-flusso}
 	\caption{Flusso di esecuzione per istruzioni privilegiate della VM.}
 	\label{fig:vm-flusso}
 \end{figure}
+Le istruzioni eseguite in modalità VMX Non-Root che causano una VM Exit sono:
+\begin{itemize}
+	\item \textit{Istruzioni che causano VM Exit incondizionatamente}, ovvero istruzioni che fanno sempre scattare un VM Exit, indipendentemente dalla configurazione del sistema. Un esempio è \textit{CPUID} che restituisce informazioni sul processore.
+	\item \textit{Istruzioni che causano VM Exit condizionatamente}, ovvero istruzioni possono causare un VM Exit, ma solo se configurato così nel controllo VMCS. L'hypervisor specifica quindi quali istruzioni rientrano in questa categoria.
+	\item \textit{Eccezioni}, quando il guest genera un’eccezione.
+	\item \textit{Interrupt esterni}, dovuti a periferiche.
+	\item \textit{Non-Maskable Interrupts} (NMIs), tipicamente usate per condizioni critiche come errori hardware.
+\end{itemize}
 Anche nel caso di interruzioni esterne, il comportamento del sistema è molto simile. Queste infatti generano un VM Exit appositamente gestito dall'hypervisor, il quale:
 \begin{itemize}
     \item Se la macchina virtuale ha le interruzioni disabilitate, l'hypervisor avvia una VM Entry specificando che la VM Exit accadrà solo quando le interruzioni saranno abilitate.
