@@ -1,20 +1,20 @@
 \newpage
 \section{Architettura dei Processori moderni}
-La classica architettura di un processore, riguardo l'esecuzione delle istruzioni, è poco efficiente, poichè bisogna aspettare sempre il termine di un istruzione per eseguire quella successiva.
+La classica architettura di un processore, riguardo l'esecuzione delle istruzioni, è poco efficiente, poichè bisogna aspettare sempre il termine di un' istruzione per eseguire quella successiva.
 Per velocizzare tale tipologia di sistema abbiamo 2 principali strade:
 \begin{itemize}
-    \item \textbf{Elettronicamente}: Si aumenta la frequenza di clock all'interno del nostro sistema (in gergo si utilizza il termine Overclock). Tale soluzione, per quanto semplice, è molto pericolosa, poichè dopo una certa soglia, non posso più aumentare la frequenza di clock. Aumentare troppo il clock potrebbe far danneggiare i componenti per la troppa energia da dissipare e quindi bisognerebbe prevedere anche delle architetture costruite ad-hoc;
+    \item \textbf{Elettronicamente}: Si aumenta la frequenza di clock all'interno del nostro sistema (in gergo si utilizza il termine Overclock). Tale soluzione, per quanto semplice, è molto pericolosa, poichè dopo una certa soglia, non posso più aumentare la frequenza di clock. Aumentare troppo il clock potrebbe danneggiare i componenti per la troppa energia da dissipare e quindi bisognerebbe prevedere anche delle architetture costruite ad-hoc;
     
     \item \textbf{Architetturalmente}: Vado a modificare l'architettura per gestire un nuovo modo di funzionamento del classico flusso di funzionamento di un processore. Tale modifica permetterebbe di poter eseguire più istruzioni contemporaneamente. Le tipologie di approcci che si possono avere in base a questa soluzione sono 2:
     \begin{itemize}
-        \item \textbf{Parallelismo livello di Processo}: Ho a disposizione più processori (parallelismo esplicito) che vanno ad eseguire in maniera concorrente tali processi;
-        \item \textbf{Parallalismo livello istruzione}: Un singolo processore riesce ad eseguire più istruzioni in maniera parallela;
+        \item \textbf{Parallelismo a livello di processo}: Ho a disposizione più processori (parallelismo esplicito) che vanno ad eseguire in maniera concorrente tali processi;
+        \item \textbf{parallalismo a livello di istruzione}: Un singolo processore riesce ad eseguire più istruzioni in maniera parallela;
     \end{itemize}
 \end{itemize}
 
 Le due macrosoluzioni non sono mutuamente esclusive, quindi si potrebbe anche pensare di effettuare una combinazione di esse.
-Guardando nello specifico alla soluzione di tipo \textbf{Architetturale} si possono incontrare varie strade per poter implementare il parallelismo delle istruzioni.
-Per poter meglio comprendere come effettuare la suddivisione del lavoro tramite le varie architetture, bisogna comprendere bene come strutturare un \textbf{Processo}. Tale entità la possiamo vedere come:
+Guardando nello specifico alla soluzione di tipo \textbf{architetturale} si possono incontrare varie strade per poter implementare il parallelismo delle istruzioni.
+Per poter meglio comprendere come effettuare la suddivisione del lavoro tramite le varie architetture, bisogna comprendere bene come strutturare un \textbf{processo}. Tale entità la possiamo vedere come:
 \begin{itemize}
     \item Formata da più task disgiunti ed indipendenti;
     \item Formata da un solo programma che richiede un'esecuzione ad elevate prestazioni.
@@ -67,7 +67,7 @@ Un primo metodo utile a far interagire due (o più) sistemi differenti è introd
     \label{fig:multi-computer}
 \end{figure}
 
-Un'altra possibilità per far interagire i processori è direttamente tramite la memoria, ottenendo un sistema complessivo detto \textbf{Multi-Processore} [\ref{fig:multi-processore}]. In tal caso, la comunicazione tra i processori avviene direttamente tramite bus, superando il problema legato alla fisica realizzabilità di connessioni su larga scala. Il vantaggio di questi sistemi è che i dati possono essere trasferiti molto rapidamente in memoria grazie al bus, mentre lo svantaggio è relativo alla competizione tra i processori negli accessi in memoria. Una possibile miglioria all'architettura proposta consiste nell'integrare a ciascun processore una memoria interna più piccola che gli permetta di gestire le istruzioni. In altre parole, è necessario gestire una gerarchia delle memoria. 
+Un'altra possibilità per far interagire i processori è direttamente tramite la memoria, ottenendo un sistema complessivo detto \textbf{Multi-Processore} [\ref{fig:multi-processore}]. In tal caso, la comunicazione tra i processori avviene direttamente tramite bus, superando il problema legato alla fisica realizzabilità di connessioni su larga scala. Il vantaggio di questi sistemi è che i dati possono essere trasferiti molto rapidamente in memoria grazie al bus, mentre lo svantaggio è relativo alla competizione tra i processori negli accessi in memoria. Una possibile miglioria all'architettura proposta consiste nell'integrare a ciascun processore una memoria interna più piccola che gli permetta di gestire le istruzioni. In altre parole, è necessario gestire una gerarchia delle memorie. 
 Potremmo (erroneamente) pensare che aggiungere più core permetta di velocizzare il sistema, in realtà questo è sbagliato perché complicherebbe notevolmente le connessioni del bus, il quale diventerebbe il collo di bottiglia del modello.
 \begin{figure}[!ht]
     \centering
@@ -149,7 +149,7 @@ comune. Ovviamente, nel caso della write through, la memoria condivisa viene agg
 Concentriamoci prima sulla soluzione adottata da write through. Per capirne il funzionamento, supponiamo che ci siano i due processori \(P_i\) (spia) e \(P_j\) (spiato) che operano sugli stessi dati. In particolare, osserviamo il processo dal punto di vista del processore spia a fronte delle azioni compiute sui dati sia da se stesso che dall'altro processore. Ogni dato presente in cache, può assumere solo due stati: \textit{valido} e \textit{non valido} [\ref{fig:automa-wt}].
 \begin{figure}[!h]
     \centering
-    \includegraphics[width=0.55\linewidth]{img/automa_wt.png}
+    \includegraphics[width=0.7\linewidth]{img/automa_wt.png}
     \caption{Automa per la gestione della coerenza in write through.}
     \label{fig:automa-wt}
 \end{figure}
