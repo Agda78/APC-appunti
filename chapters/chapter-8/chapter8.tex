@@ -33,6 +33,15 @@ Per quanto riguarda la \textbf{gestione delle interruzioni}, questa avviene comp
 Una tale gestione semplifica notevolmente l'hardware, lasciando una gestione flessibile al sistema operativo.
 
 \section{Pipeline nel MIPS}
+
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/Pipeline-MIPS.png}
+    \caption{Pipeline del MIPS}
+    \label{fig:mips-pipeline}
+\end{figure}
+
 Le fasi fondamentali che caratterizzano la pipe del MIPS differiscono leggermente da quelle nel caso generale descritto nell'apposito capitolo [\ref{par:pipe}]. Queste sono:
 \begin{itemize}
     \item \textbf{Instruction Memory (IM)}: Si preleva l'istruzione dalla memoria delle istruzioni e si incrementa il Program Counter.
@@ -94,6 +103,7 @@ Nella \textbf{fase di Data Memory} avviene l'accesso alla memoria dati, secondo 
 
 \subsection{Register File (WB)}
 Nella seconda \textbf{fase di Register File} si verifica cosa bisogna scrivere all'interno dei registri interni. Il componente che meglio indica il suo funzionamento è il multiplexer finale, che serve per specificare se il dato da caricare all'interno dei registri sia il risultato dell'ALU o qualche valore proveniente dalla memoria dati. 
+
 
 \section{Gestione dei salti}
 Il MIPS adotta una strategia di \textbf{gestione dei salti} molto diversa da quella discussa nel caso generale. Infatti, subito dopo un'istruzione di salto, c'è una \textit{branch delay slot}: l'istruzione successiva viene sempre eseguita, indipendentemente dal risultato del salto. Lo scopo è mantenere la pipeline piena e attiva mentre si valuta il salto. La decisione se saltare o meno avviene nella fase ID, ma nel frattempo (come sappiamo dal comportamento generale) la pipeline ha già precaricato l'istruzione successiva, detta \textit{delay slot}. A quel punto possono verificarsi due situazioni:
