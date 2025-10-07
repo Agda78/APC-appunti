@@ -1,3 +1,6 @@
+# APPUNTI DI APC
+Tale repo è stata creata per raccogliere gli appunti del corso di Architettura e progettazione dei calcolatori presso l'Università degli studi di Napoli "Federico II". Essi sono rilasciati con una licenza (controllare il reparto license), che ne preclude l'utilizzo commerciale, ma ne permette la modifica e l'espansione a meno di utilizzare gli stessi termini di licenza (non vorrei trovarmi tali appunti in futuro su canali di vendita di appunti da parte di terzi, sono dell'opinione che unba mano di lava con un'altra). Oltre al pdf (che si trova nella cartella pdf_output) vi lascio anche tutto il codice latex, in modo che se voleste espandere e migliorare tali appunti nelle parti in cui sono carenti, sarebbe un piacere alla comunità non indifferente. Con questo vi auguro un buono studio, spero vi appassioniate alla materia come abbiamo fatto noi <3 
+
 # Come leggere gli appunti
 Dopo ogni aggiornamento è stato predisposto un bot che compila il documento e lo pusha all'interno della cartella pdf_output. Bisogna stare attenti alla seguente cosa:
 l'ultimo commit disponibile è quello che riporta l'aggiornamento del pdf (poichè l'autocompilazione può richiedere qualche minuto)
@@ -74,3 +77,6 @@ Annullamento di un commit errato
 ```bash
 git reset HEAD~1
 ```
+## 📘 Licenza
+Questo progetto è rilasciato con licenza **CC BY-NC-SA 4.0**.  
+Consulta il file [LICENSE](./LICENSE.md) per i dettagli.
